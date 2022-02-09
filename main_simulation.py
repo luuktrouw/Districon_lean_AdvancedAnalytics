@@ -30,9 +30,9 @@ class instancezero():
         self.t1klaar = math.inf
         self.t2klaar = math.inf
         self.t3klaar = math.inf
-        self.orders_inprocess0 = [[math.inf],[0]] #first list is the finish times, second the order sizes
-        self.orders_inprocess1 = [[math.inf],[0]]
-        self.orders_inprocess2 = [[math.inf],[0]]
+        self.orders_inprocess0 = [[math.inf,0,'init']] #first list is the finish times, second the order sizes
+        self.orders_inprocess1 = [[math.inf,0,'init']]
+        self.orders_inprocess2 = [[math.inf,0,'init']]
         self.amountproduced = 0
         self.capacities = [10,10,10]
 
@@ -46,7 +46,7 @@ for loopcounter in range(numberloops):
 
     instance = instancezero()
 
-    while instance.tijd <= 5000:
+    while instance.tijd <= 500000:
         previoustime = instance.tijd
 
         next_t_event = min(instance.t_neworder, instance.orders_inprocess0[0][0], instance.orders_inprocess1[0][0], instance.orders_inprocess2[0][0])
@@ -57,15 +57,15 @@ for loopcounter in range(numberloops):
 
 
         if len(instance.inventories[0]) > 0:
-            firstorder0 = instance.inventories[0][0]
+            firstorder0 = instance.inventories[0][0][1]
         else:
             firstorder0 =0
         if len(instance.inventories[1]) > 0:
-            firstorder1 = instance.inventories[1][0]
+            firstorder1 = instance.inventories[1][0][1]
         else:
             firstorder1 =0
         if len(instance.inventories[2]) > 0:
-            firstorder2 = instance.inventories[2][0]
+            firstorder2 = instance.inventories[2][0][1]
         else:
             firstorder2 =0
 
@@ -78,23 +78,24 @@ for loopcounter in range(numberloops):
 
         nexttime = instance.tijd
         timeunits = int(round(nexttime - previoustime,0))
+        inventory_staalbuigen = 0
+        for i in range(len(instance.inventories[0])):
+            inventory_staalbuigen += instance.inventories[0][i][1]
+        inventory_staalkoppelen = 0
+        for i in range(len(instance.inventories[1])):
+            inventory_staalkoppelen += instance.inventories[1][i][1]
+        inventory_omhulselplaatsen = 0
+        for i in range(len(instance.inventories[2])):
+            inventory_omhulselplaatsen += instance.inventories[2][i][1]
+
         for i in range(timeunits):
-            inventories_measure[0].append(sum(instance.inventories[0]))
-            inventories_measure[1].append(sum(instance.inventories[1]))
-            inventories_measure[2].append(sum(instance.inventories[2]))
+            inventories_measure[0].append(inventory_staalbuigen)
+            inventories_measure[1].append(inventory_staalkoppelen)
+            inventories_measure[2].append(inventory_omhulselplaatsen)
 
     totalinventorie_measure.append(inventories_measure)
 
 
-
-print('total inventories at the end of time:', sum(instance.inventories[0]), sum(instance.inventories[1]),sum(instance.inventories[2]))
-'''
-plt.hist(x=inventories_measure[0], alpha = 0.3, label = 'inv before 0')
-plt.hist(x=inventories_measure[1], alpha = 0.3, label = 'inv before 1')
-plt.hist(x=inventories_measure[2], alpha = 0.3, label = 'inv before 2')
-plt.legend()
-plt.show()
-'''
 print('average inventory before point 0:', statistics.mean(inventories_measure[0]))
 print('average inventory before point 1:', statistics.mean(inventories_measure[1]))
 print('average inventory before point 2:', statistics.mean(inventories_measure[2]))
