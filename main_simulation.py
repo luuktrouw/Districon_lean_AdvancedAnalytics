@@ -18,23 +18,30 @@ numberloops = 1
 
 totalinventorie_measure = []
 
-eventnames = ["new order", "staal buigen klaar", "staal koppelen klaar", "omhulsel klaar"]
+eventnames = ["new order", "staal buigen klaar", "staal koppelen klaar", "omhulsel klaar", 'supply stalen stangen']
 
 ###########################
 class instancezero():
     def __init__(self):
+        initdict1 = {}
+        initdict2 = {}
+        initdict3 = {}
         self.work_state= [0, 0, 0]
+        self.materialstate = [{'stalen stangen': 100},{'koppeldraad': 10000},{'soft stuffing': math.inf, 'medium stuffing': math.inf,'hard stuffing': math.inf}]
+        self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
+        self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
+        self.supplyorders_softstuffing_inprocess = [[math.inf,0]]
+        self.supplyorders_mediumstuffing_inprocess = [[math.inf,0]]
+        self.supplyorders_hardstuffing_inprocess = [[math.inf,0]]
         self.inventories = [[], [], []]
         self.tijd = 0
         self.t_neworder = 4
-        self.t1klaar = math.inf
-        self.t2klaar = math.inf
-        self.t3klaar = math.inf
-        self.orders_inprocess0 = [[math.inf,0,'init']] #first list is the finish times, second the order sizes
-        self.orders_inprocess1 = [[math.inf,0,'init']]
-        self.orders_inprocess2 = [[math.inf,0,'init']]
+        self.orders_inprocess0 = [[math.inf,0,initdict1]] #first list is the finish times, second the order sizes
+        self.orders_inprocess1 = [[math.inf,0,initdict2]]
+        self.orders_inprocess2 = [[math.inf,0,initdict3]]
         self.amountproduced = 0
         self.capacities = [10,10,10]
+        self.finishedorders = [] # list consisting of dictionaries of orders
 
         # measures
 
@@ -46,33 +53,20 @@ for loopcounter in range(numberloops):
 
     instance = instancezero()
 
+    curtimeinterval = 100000
+    timeinterval = 100000
+
     while instance.tijd <= 500000:
         previoustime = instance.tijd
+        if instance.tijd > curtimeinterval:
+            print('current time in simulation is: ', curtimeinterval)
+            curtimeinterval += timeinterval
 
-        next_t_event = min(instance.t_neworder, instance.orders_inprocess0[0][0], instance.orders_inprocess1[0][0], instance.orders_inprocess2[0][0])
-        next_event = eventnames[np.argmin([instance.t_neworder, instance.orders_inprocess0[0][0], instance.orders_inprocess1[0][0], instance.orders_inprocess2[0][0]])]
+        next_t_event = min(instance.t_neworder, instance.orders_inprocess0[0][0], instance.orders_inprocess1[0][0], instance.orders_inprocess2[0][0], instance.supplyorders_stalenstangen_inprocess[0][0])
+        next_event = eventnames[np.argmin([instance.t_neworder, instance.orders_inprocess0[0][0], instance.orders_inprocess1[0][0], instance.orders_inprocess2[0][0], instance.supplyorders_stalenstangen_inprocess[0][0]])]
         instance = Functions4simulation.updatevariables(instance, next_event, next_t_event)
         #print('tijd: ', instance.tijd)
         #print('inventories: ', sum(instance.inventories[0]), sum(instance.inventories[1]), sum(instance.inventories[2]))
-
-
-        if len(instance.inventories[0]) > 0:
-            firstorder0 = instance.inventories[0][0][1]
-        else:
-            firstorder0 =0
-        if len(instance.inventories[1]) > 0:
-            firstorder1 = instance.inventories[1][0][1]
-        else:
-            firstorder1 =0
-        if len(instance.inventories[2]) > 0:
-            firstorder2 = instance.inventories[2][0][1]
-        else:
-            firstorder2 =0
-
-
-        #print('size fifo order:', firstorder0, firstorder1, firstorder2)
-        #print('what is working on how many? ', instance.work_state)
-        #print('')
 
         eventcounter += 1
 
@@ -93,7 +87,7 @@ for loopcounter in range(numberloops):
             inventories_measure[1].append(inventory_staalkoppelen)
             inventories_measure[2].append(inventory_omhulselplaatsen)
 
-    totalinventorie_measure.append(inventories_measure)
+    totalinventorie_measure.append(inventories_measure)a
 
 
 print('average inventory before point 0:', statistics.mean(inventories_measure[0]))
@@ -111,6 +105,22 @@ plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
 plt.show()
 
 
+inventory_times_staalbuigen = []
+for i in range(len(instance.finishedorders)):
+    inventory_times_staalbuigen.append(instance.finishedorders[i]['tijd inventory staal buigen'])
+plt.hist(inventory_times_staalbuigen, bins = 200)
+plt.show()
 
-
+totalprocesstime = []
+for i in range(len(instance.finishedorders)):
+    totalprocesstime.append(instance.finishedorders[i]['total process time'])
+n, x,_ = plt.hist(totalprocesstime, bins = 50)
+bin_centers = 0.5*(x[1:]+x[:-1])
+listaveragevaluesn = []
+for i in range(5):
+    listaveragevaluesn.append(sum(n[:i])/5)
+for i in range(5, len(n)):
+    listaveragevaluesn.append(sum(n[i-5:i+5])/10)
+plt.plot(bin_centers,listaveragevaluesn)
+plt.show()
 
