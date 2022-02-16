@@ -6,13 +6,14 @@ The production steps each have certain distribution of lead times (for example N
 Everything is in seconds
 '''
 import math
-
+import plotly.express as px
 import Functions4simulation
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 import statistics
+import plottingfunctions
 
 numberloops = 1
 
@@ -26,8 +27,9 @@ class instancezero():
         initdict1 = {}
         initdict2 = {}
         initdict3 = {}
-        self.work_state= [0, 0, 0]
-        self.materialstate = [{'stalen stangen': 100},{'koppeldraad': 10000},{'soft stuffing': math.inf, 'medium stuffing': math.inf,'hard stuffing': math.inf}]
+        self.work_state= [[0,0], [0,0], [0,0]]
+        self.materialstate = [{'stalen stangen': 100},{'koppeldraad': 100000000},{'soft stuffing': math.inf, 'medium stuffing': math.inf,'hard stuffing': math.inf}]
+        self.buffers = []
         self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
         self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
         self.supplyorders_softstuffing_inprocess = [[math.inf,0]]
@@ -41,6 +43,7 @@ class instancezero():
         self.orders_inprocess2 = [[math.inf,0,initdict3]]
         self.amountproduced = 0
         self.capacities = [10,10,10]
+        self.work_state_times = [{i: 0 for i in range(self.capacities[0] + 1)}, {i: 0 for i in range(self.capacities[1] + 1)}, {i: 0 for i in range(self.capacities[2] + 1)}]
         self.finishedorders = [] # list consisting of dictionaries of orders
 
         # measures
@@ -87,7 +90,7 @@ for loopcounter in range(numberloops):
             inventories_measure[1].append(inventory_staalkoppelen)
             inventories_measure[2].append(inventory_omhulselplaatsen)
 
-    totalinventorie_measure.append(inventories_measure)a
+    totalinventorie_measure.append(inventories_measure)
 
 
 print('average inventory before point 0:', statistics.mean(inventories_measure[0]))
@@ -123,4 +126,12 @@ for i in range(5, len(n)):
     listaveragevaluesn.append(sum(n[i-5:i+5])/10)
 plt.plot(bin_centers,listaveragevaluesn)
 plt.show()
+
+plottingfunctions.plotworkstates_fractions_staalbuigen(instance.work_state_times[0])
+
+plottingfunctions.plotworkstates_fractions_staalkoppelen(instance.work_state_times[1])
+
+plottingfunctions.plotworkstates_fractions_omhulselmaken(instance.work_state_times[2])
+
+plottingfunctions.wachttijd_voor_staal_buigen(instance.finishedorders)
 

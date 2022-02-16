@@ -4,24 +4,24 @@ from bisect import bisect
 import random
 
 # distribution orders
-Mean_ordertime = 20 # 10
+Mean_ordertime = 110 # 10
 Mean_ordersize = 4
-stdev_ordertime = 2 # 2
+stdev_ordertime = 10 # 2
 stdev_ordersize = 1
 
 # stalen stangen supply
-Mean_supplytime_stalen_stangen = 10
+Mean_supplytime_stalen_stangen = 2500
 stdev_supplytime_stalen_stangen = 2
 reorderpoint_stalenstangen = 20
-reorder_upto_point_stalenstangen = 100
+reorder_upto_point_stalenstangen = 10000
 
 # distributions processes
-Mean_process0time = 20
-Mean_process1time = 20
-Mean_process2time = 20
-stdev_process0time = 4
-stdev_process1time = 4
-stdev_process2time = 4
+Mean_process0time = 100
+Mean_process1time = 120
+Mean_process2time = 100
+stdev_process0time = 10
+stdev_process1time = 0
+stdev_process2time = 10
 
 def get_order_size():
     size = round(np.random.normal(Mean_ordersize, stdev_ordersize), 0)
@@ -57,8 +57,9 @@ def get_length_omhulsel_plaatsen():
 
 def get_neworderinfo():
     ordersize = get_order_size()
-    #if ordersize <= 0:
-        #print('gaat dit fout?')
+    if ordersize <= 0:
+        print('gaat dit fout?')
+        ordersize = 1
 
     letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
     sign1 = random.choice(letters)
@@ -125,13 +126,15 @@ def eventneworder(instance):
 
     instance.t_neworder = instance.tijd + get_length_neworder()
 
-    if instance.capacities[0] - instance.work_state[0] >= ordersize and len(instance.inventories[0]) == 0 and instance.materialstate[0]['stalen stangen'] >= orderdict['bill of materials']['stalen stangen']:
+    if instance.capacities[0] - instance.work_state[0][0] >= ordersize and len(instance.inventories[0]) == 0 and instance.materialstate[0]['stalen stangen'] >= orderdict['bill of materials']['stalen stangen']:
         instance.materialstate[0]['stalen stangen'] -= orderdict['bill of materials']['stalen stangen']
         # if materials to low, order up to a certain level.
         if instance.materialstate[0]['stalen stangen'] <= reorderpoint_stalenstangen and len(instance.supplyorders_stalenstangen_inprocess) == 1:
             instance.supplyorders_stalenstangen_inprocess.insert(0,[instance.tijd + get_supplytime_stalen_stangen(), reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
 
-        instance.work_state[0] += ordersize
+        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.work_state[0][0] += ordersize
+        instance.work_state[0][1] = instance.tijd
         finish_time_this_order =  instance.tijd + get_duration_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
@@ -155,10 +158,12 @@ def eventneworder(instance):
 def staal_buigen_klaar(instance):
     # update the machine itself
     processed_order = instance.orders_inprocess0.pop(0)
-    instance.work_state[0] -= processed_order[1]
+    instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+    instance.work_state[0][0] -= processed_order[1]
+    instance.work_state[0][1] = instance.tijd
 
     # what goes in the machine:
-    while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0] >= instance.inventories[0][0][1] and instance.materialstate[0]['stalen stangen'] >= instance.inventories[0][0][2]['bill of materials']['stalen stangen']:
+    while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and instance.materialstate[0]['stalen stangen'] >= instance.inventories[0][0][2]['bill of materials']['stalen stangen']:
         newprocessing_order = instance.inventories[0].pop(0)
 
         instance.materialstate[0]['stalen stangen'] -= newprocessing_order[2]['bill of materials']['stalen stangen']
@@ -166,7 +171,9 @@ def staal_buigen_klaar(instance):
         if instance.materialstate[0]['stalen stangen'] <= reorderpoint_stalenstangen and len(instance.supplyorders_stalenstangen_inprocess) == 1:
             instance.supplyorders_stalenstangen_inprocess.insert(0,[instance.tijd + get_supplytime_stalen_stangen(), reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
 
-        instance.work_state[0] += newprocessing_order[1]
+        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.work_state[0][0] += newprocessing_order[1]
+        instance.work_state[0][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_duration_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
@@ -181,8 +188,10 @@ def staal_buigen_klaar(instance):
         instance.orders_inprocess0.insert(finish_time_index, newprocessing_order)
 
     # what goes out of the machine:
-    if instance.capacities[1] - instance.work_state[1] >= processed_order[1] and len(instance.inventories[1]) == 0 and instance.materialstate[1]['koppeldraad'] >= processed_order[2]['bill of materials']['koppeldraad']:
-        instance.work_state[1] += processed_order[1]
+    if instance.capacities[1] - instance.work_state[1][0] >= processed_order[1] and len(instance.inventories[1]) == 0 and instance.materialstate[1]['koppeldraad'] >= processed_order[2]['bill of materials']['koppeldraad']:
+        instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.work_state[1][0] += processed_order[1]
+        instance.work_state[1][1] = instance.tijd
         instance.materialstate[1]['koppeldraad'] -= processed_order[2]['bill of materials']['koppeldraad']
         finish_time_this_order = instance.tijd + get_length_staal_koppelen()
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
@@ -207,13 +216,17 @@ def staal_buigen_klaar(instance):
 def staal_koppelen_klaar(instance):
     # update the machine itself
     processed_order = instance.orders_inprocess1.pop(0)
-    instance.work_state[1] -= processed_order[1]
+    instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+    instance.work_state[1][0] -= processed_order[1]
+    instance.work_state[1][1] = instance.tijd
 
     # what goes in the machine:
-    while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1] >= instance.inventories[1][0][1] and instance.materialstate[1]['koppeldraad'] >= instance.inventories[1][0][2]['bill of materials']['koppeldraad']:
+    while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1][0] >= instance.inventories[1][0][1] and instance.materialstate[1]['koppeldraad'] >= instance.inventories[1][0][2]['bill of materials']['koppeldraad']:
         newprocessing_order = instance.inventories[1].pop(0)
 
-        instance.work_state[1] += newprocessing_order[1]
+        instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.work_state[1][0] += newprocessing_order[1]
+        instance.work_state[1][1] = instance.tijd
         instance.materialstate[1]['koppeldraad'] -= newprocessing_order[2]['bill of materials']['koppeldraad']
         finish_time_this_order =  instance.tijd + get_length_staal_koppelen()
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
@@ -229,8 +242,10 @@ def staal_koppelen_klaar(instance):
         instance.orders_inprocess1.insert(finish_time_index, newprocessing_order)
 
     # what goes out of the machine:
-    if instance.capacities[2] - instance.work_state[2] >= processed_order[1] and len(instance.inventories[2]) == 0:
-        instance.work_state[2] += processed_order[1]
+    if instance.capacities[2] - instance.work_state[2][0] >= processed_order[1] and len(instance.inventories[2]) == 0:
+        instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.work_state[2][0] += processed_order[1]
+        instance.work_state[2][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_length_omhulsel_plaatsen()
         finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])
 
@@ -254,7 +269,9 @@ def staal_koppelen_klaar(instance):
 def omhulsel_klaar(instance):
     # update the machine itself
     processed_order = instance.orders_inprocess2.pop(0)
-    instance.work_state[2] -= processed_order[1]
+    instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+    instance.work_state[2][0] -= processed_order[1]
+    instance.work_state[2][1] = instance.tijd
 
     processed_order[2]['finish time'] = instance.tijd
     processed_order[2]['total process time'] =  processed_order[2]['finish time'] - processed_order[2]['time received']
@@ -265,10 +282,12 @@ def omhulsel_klaar(instance):
     instance.amountproduced += processed_order[1]
 
     # what goes in the machine:
-    while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2] >= instance.inventories[2][0][1]:
+    while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2][0] >= instance.inventories[2][0][1]:
         newprocessing_order = instance.inventories[2].pop(0)
 
-        instance.work_state[2] += newprocessing_order[1]
+        instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.work_state[2][0] += newprocessing_order[1]
+        instance.work_state[2][1] = instance.tijd
         finish_time_this_order =  instance.tijd + get_length_omhulsel_plaatsen()
         finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])
 
@@ -290,11 +309,13 @@ def supplyorder_stalen_stangen(instance):
     instance.supplyorders_stalenstangen_inprocess.pop(0)
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
-    while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0] >= instance.inventories[0][0][1] and instance.materialstate[0]['stalen stangen'] >= instance.inventories[0][0][2]['bill of materials']['stalen stangen']:
+    while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and instance.materialstate[0]['stalen stangen'] >= instance.inventories[0][0][2]['bill of materials']['stalen stangen']:
         newprocessing_order = instance.inventories[0].pop(0)
 
         instance.materialstate[0]['stalen stangen'] -= newprocessing_order[2]['bill of materials']['stalen stangen']
-        instance.work_state[0] += newprocessing_order[1]
+        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.work_state[0][0] += newprocessing_order[1]
+        instance.work_state[0][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_duration_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
