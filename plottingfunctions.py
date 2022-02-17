@@ -31,10 +31,37 @@ def plotworkstates_fractions_omhulselmaken(work_state_times):
     fig3 = px.bar(dict(workstates_omhulselmaken = workstates_omhulselmaken, values_omhulselmaken =values_omhulselmaken), x='workstates_omhulselmaken', y='values_omhulselmaken')
     fig3.show()
 
+
 def wachttijd_voor_staal_buigen(finishedorders):
     wachttijd_lijst = []
     for i in range(len(finishedorders)):
         wachttijd_lijst.append(finishedorders[i]['tijd inventory staal buigen'])
     fig4 = px.histogram(dict(wachttijd_lijst = wachttijd_lijst), x = 'wachttijd_lijst')
     fig4.show()
+
+def total_through_time(finished_orders_df):
+    fig = px.histogram(finished_orders_df, x="total process time")
+    fig.show()
+
+
+def Make_kpi_figures(finished_orders_df):
+
+    fig_total_thoughout_time = px.histogram(finished_orders_df, x = 'total process time')
+    fig_total_thoughout_time.show()
+
+    fig_queue_time_staal_buigen = px.histogram(finished_orders_df, x='tijd inventory staal buigen')
+    fig_queue_time_staal_buigen.show()
+
+    fig_queue_time_staal_koppelen = px.histogram(finished_orders_df, x='tijd inventory staal koppelen')
+    fig_queue_time_staal_koppelen.show()
+
+    fig_queue_time_omhulsel_maken = px.histogram(finished_orders_df, x='tijd inventory omhulsel maken')
+    fig_queue_time_omhulsel_maken.show()
+
+    fig_total_queue_time = px.histogram(finished_orders_df, x='total queue time')
+    fig_total_queue_time.show()
+
+
+    fig_total_queue_time = 1
+
 
