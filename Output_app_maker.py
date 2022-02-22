@@ -19,14 +19,21 @@ app.layout = html.Div([
                         value = 2015, style = {'width':'40%'}),
             html.Div(id = 'output_container', children = []),
             html.Br(),
-            dcc.Graph(style = {'height': 300, 'width': 30000},id = 'output1'),
-            dcc.Graph(style = {'height': 300, 'width': 30000},id = 'my_bee_map', figure = {})
+            dcc.Graph(style = {'height': 300, 'width': 600},id = 'output1'),
+            dcc.Graph(style = {'height': 300, 'width': 600},id = 'output2'),
+            dcc.Graph(style = {'height': 300, 'width': 600},id = 'output3'),
+            dcc.Graph(style = {'height': 300, 'width': 600},id = 'output4'),
+            dcc.Graph(style = {'height': 300, 'width': 600},id = 'my_bee_map', figure = {})
 
 
 
-],style={'display': 'flex', 'flex-direction': 'row'})
+])
 
-@app.callback([Output(component_id= 'output1', component_property= 'figure') , Output(component_id='my_bee_map', component_property='figure')],
+@app.callback([Output(component_id= 'output1', component_property= 'figure') ,
+               Output(component_id= 'output2', component_property= 'figure') ,
+               Output(component_id= 'output3', component_property= 'figure') ,
+               Output(component_id= 'output4', component_property= 'figure') ,
+               Output(component_id='my_bee_map', component_property='figure')],
               [Input(component_id='slct_year', component_property= 'value')])
 
 def update_graph(option_slctd):
@@ -35,37 +42,7 @@ def update_graph(option_slctd):
     elif option_slctd == 2016:
         fig = fig_total_thoughout_time
 
-    return fig_queue_time_omhulsel_maken, fig
+    return fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
 
 if __name__ == '__main__':
     app.run_server()
-
-'''
-fig = go.Figure(go.Histogram(x = finished_orders_df["total process time"]))
-fig.add_trace(go.Histogram(x = finished_orders_df["total process time"]))
-fig.update_layout(barmode = 'stack')
-fig.show()
-
-labels = [ 'EEN', 'TWEE']
-buttons = []
-for i, label in enumerate(labels):
-    visibility = [i==j for j in range(len(labels))]
-    button = dict(
-                 label =  label,
-                 method = 'update',
-                 args = [{'visible': visibility},
-                     {'title': label}])
-    buttons.append(button)
-
-updatemenus = list([
-    dict(active=-1,
-         x=-0.15,
-         buttons=buttons
-    )
-])
-
-fig['layout']['title'] = 'Title'
-fig['layout']['showlegend'] = True
-fig['layout']['updatemenus'] = updatemenus
-fig.show()
-'''
