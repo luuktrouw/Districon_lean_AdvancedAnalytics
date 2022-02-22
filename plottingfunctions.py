@@ -47,19 +47,21 @@ def total_through_time(finished_orders_df):
 def Make_kpi_figures(finished_orders_df):
 
     fig_total_thoughout_time = px.histogram(finished_orders_df, x = 'total process time')
-    fig_total_thoughout_time.show()
+    #fig_total_thoughout_time.show()
 
     fig_queue_time_staal_buigen = px.histogram(finished_orders_df, x='tijd inventory staal buigen')
-    fig_queue_time_staal_buigen.show()
+    #fig_queue_time_staal_buigen.show()
 
     fig_queue_time_staal_koppelen = px.histogram(finished_orders_df, x='tijd inventory staal koppelen')
-    fig_queue_time_staal_koppelen.show()
+    #fig_queue_time_staal_koppelen.show()
 
     fig_queue_time_omhulsel_maken = px.histogram(finished_orders_df, x='tijd inventory omhulsel maken')
-    fig_queue_time_omhulsel_maken.show()
+    #fig_queue_time_omhulsel_maken.show()
 
     fig_total_queue_time = px.histogram(finished_orders_df, x='total queue time')
-    fig_total_queue_time.show()
+    #fig_total_queue_time.show()
+
+    return fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
 
 
     fig_total_queue_time = 1

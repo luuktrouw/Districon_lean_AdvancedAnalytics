@@ -3,10 +3,10 @@ import math
 from bisect import bisect
 import random
 
-# distribution orders
-Mean_ordertime = 110
-Mean_ordersize = 4
-stdev_ordertime = 10
+# distribution binnenkomen van orders
+Mean_ordertime = 240
+Mean_ordersize = 2
+stdev_ordertime = 1
 stdev_ordersize = 1
 
 # supply
@@ -14,64 +14,102 @@ supply_order_interval_time = 2400
 Mean_supplytime_stalen_stangen = 480
 stdev_supplytime_stalen_stangen = 0
 #eorderpoint_stalenstangen = 20
-reorder_upto_point_stalenstangen = 250
+reorder_upto_point_stalenstangen = 1000
 
 Mean_supplytime_koppeldraad = 480
 stdev_supplytime_koppeldraad = 0
-reorder_upto_point_koppeldraad = 250
+reorder_upto_point_koppeldraad = 1000
 
 Mean_supplytime_stuffing = 480
 stdev_supplytime_stuffing = 0
-reorder_upto_point_softstuffing = 250
-reorder_upto_point_mediumstuffing = 250
-reorder_upto_point_hardstuffing = 250
+reorder_upto_point_softstuffing = 1000
+reorder_upto_point_mediumstuffing = 1000
+reorder_upto_point_hardstuffing = 1000
 
 # distributions processes
-Mean_process0time = 100
-Mean_process1time = 120
-Mean_process2time = 100
-stdev_process0time = 10
-stdev_process1time = 0
-stdev_process2time = 10
+Mean_process0time = 720
+Mean_process1time = 650
+Mean_process2time = 700
+stdev_process0time = 20
+stdev_process1time = 40
+stdev_process2time = 20
+
+# schakel breakdowns
+Mean_schakel_staalbuigen_breakdown = 24000000000000000
+Mean_schakel_staalkoppelen_breakdown = 240000000000000000
+Mean_schakel_omhulselmaken_breakdown = 24000000000000
+Mean_fix_staalbuigen_breakdown = 4800
+Mean_fix_staalkoppelen_breakdown = 4800
+Mean_fix_omhulselmaken_breakdown = 4800
 
 def get_order_size():
     size = round(np.random.normal(Mean_ordersize, stdev_ordersize), 0)
     #print('size of next order: ', size)
     return size
 
+def get_length_next_staalbuigen_breakdown():
+    time = round(np.random.exponential(Mean_schakel_staalbuigen_breakdown), 0)
+    return time
+
+def get_length_next_staalkoppelen_breakdown():
+    time = round(np.random.exponential(Mean_schakel_staalkoppelen_breakdown), 0)
+    return time
+
+def get_length_next_omhulselmaken_breakdown():
+    time = round(np.random.exponential(Mean_schakel_omhulselmaken_breakdown), 0)
+    return time
+
+def get_length_fix_staalbuigen_breakdown():
+    time = round(np.random.exponential(Mean_fix_staalbuigen_breakdown), 0)
+    return time
+
+def get_length_fix_staalkoppelen_breakdown():
+    time = round(np.random.exponential(Mean_fix_staalkoppelen_breakdown), 0)
+    return time
+
+def get_length_fix_omhulselmaken_breakdown():
+    time = round(np.random.exponential(Mean_fix_omhulselmaken_breakdown), 0)
+    return time
+
 def get_supplytime_stalen_stangen():
     time = round(np.random.normal(Mean_supplytime_stalen_stangen, stdev_supplytime_stalen_stangen), 0)
+    #time = round(np.random.exponential(Mean_supplytime_stalen_stangen), 0)
     #print('size of next order: ', size)
     return time
 
 def get_supplytime_koppeldraad():
     time = round(np.random.normal(Mean_supplytime_koppeldraad, stdev_supplytime_koppeldraad), 0)
+    #time = round(np.random.exponential(Mean_supplytime_koppeldraad), 0)
     #print('size of next order: ', size)
     return time
 
 def get_supplytime_stuffing():
     time = round(np.random.normal(Mean_supplytime_stuffing, stdev_supplytime_stuffing), 0)
+    #time = round(np.random.exponential(Mean_supplytime_stuffing), 0)
     #print('size of next order: ', size)
     return time
 
 def get_length_neworder():
 
+    tijd = round(np.random.normal(Mean_ordertime, stdev_ordersize), 1)
     #tijd = round(np.random.exponential(Mean_ordertime), 1)
-    tijd = round(np.random.normal(Mean_ordertime, stdev_ordertime), 1)
     #print('time until next order: ', tijd)
     return tijd
 
-def get_duration_staal_buigen():
-    tijd = round(np.random.normal(Mean_process0time, stdev_process0time), 1)
+def get_length_staal_buigen():
+    #tijd = round(np.random.normal(Mean_process0time, stdev_process0time), 1)
+    tijd = 600 + round(np.random.exponential(Mean_process0time/20), 1)
     #print('new time schakel 0: ', tijd)
     return tijd
 
 def get_length_staal_koppelen():
-    tijd = round(np.random.normal(Mean_process1time, stdev_process1time), 1)
+    #tijd = round(np.random.normal(Mean_process1time, stdev_process1time), 1)
+    tijd = 500 + round(np.random.exponential(Mean_process1time/75), 1)
     #print('new time schakel 1: ', tijd)
     return tijd
 
 def get_length_omhulsel_plaatsen():
+    tijd = round(np.random.normal(Mean_process2time, stdev_process2time), 1)
     tijd = round(np.random.normal(Mean_process2time, stdev_process2time), 1)
     #print('new time schakel 2: ', tijd)
     return tijd
@@ -79,7 +117,6 @@ def get_length_omhulsel_plaatsen():
 def get_neworderinfo():
     ordersize = get_order_size()
     if ordersize <= 0:
-        print('gaat dit fout?')
         ordersize = 1
 
     letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
@@ -142,13 +179,15 @@ def get_neworderinfo():
 
     return orderID, ordersize, softness, sizethisorder, billofmaterials
 
+
 def event_neworder(instance):
 
     orderID, ordersize, softness, sizethisorder, billofmaterials = get_neworderinfo()
 
     orderdict = {'orderID': orderID, 'softnesstype': softness, 'size': sizethisorder, 'bill of materials': billofmaterials, 'time received': instance.tijd}
 
-    instance.t_neworder = instance.tijd + get_length_neworder()
+    #instance.t_neworder = instance.tijd + get_length_neworder()
+    instance.nexteventtimes['new order'] = instance.tijd + get_length_neworder()
 
     if instance.capacities[0] - instance.work_state[0][0] >= ordersize and len(instance.inventories[0]) == 0 and all(instance.materialstate[0][i] >= orderdict['bill of materials']['staal buigen'][i] for i in orderdict['bill of materials']['staal buigen'].keys()):
 
@@ -164,7 +203,7 @@ def event_neworder(instance):
         instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += ordersize
         instance.work_state[0][1] = instance.tijd
-        finish_time_this_order =  instance.tijd + get_duration_staal_buigen()
+        finish_time_this_order =  instance.tijd + get_length_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
         orderdict['start tijd staal buigen'] = instance.tijd
@@ -176,11 +215,11 @@ def event_neworder(instance):
 
         instance.orders_inprocess0.insert(finish_time_index, [finish_time_this_order, ordersize, orderdict])
 
-        # instance.t1klaar = instance.tijd + get_duration_staal_buigen()
-
     else:
         orderdict['start tijd inventory staal buigen'] = instance.tijd
         instance.inventories[0].append([math.inf, ordersize, orderdict])
+
+    instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
 
     return instance
 
@@ -208,7 +247,7 @@ def event_staal_buigen_klaar(instance):
         instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
         instance.work_state[0][1] = instance.tijd
-        finish_time_this_order = instance.tijd + get_duration_staal_buigen()
+        finish_time_this_order = instance.tijd + get_length_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal buigen'] = instance.tijd
@@ -248,6 +287,9 @@ def event_staal_buigen_klaar(instance):
         processed_order[0] = math.inf
         processed_order[2]['start tijd inventory staal koppelen'] = instance.tijd
         instance.inventories[1].append(processed_order)
+
+    instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
+    instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
 
     return instance
 
@@ -304,10 +346,14 @@ def event_staal_koppelen_klaar(instance):
         processed_order[0] = finish_time_this_order
 
         instance.orders_inprocess2.insert(finish_time_index, processed_order)
+
     else:
         processed_order[0] = math.inf
         processed_order[2]['start tijd inventory omhulsel maken'] = instance.tijd
         instance.inventories[2].append(processed_order)
+
+    instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
+    instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
 
     return instance
 
@@ -349,34 +395,37 @@ def event_omhulsel_klaar(instance):
         newprocessing_order[0] = finish_time_this_order
 
         instance.orders_inprocess2.insert(finish_time_index, newprocessing_order)
+    instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
 
     return instance
 
 def event_order_new_stalen_stangen(instance):
-    instance.t_newsupplyorder_stalen_stangen += supply_order_interval_time
-
-    instance.supplyorders_stalenstangen_inprocess.insert(0,[instance.tijd + get_supplytime_stalen_stangen(), reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
+    instance.nexteventtimes['order new stalen stangen'] += supply_order_interval_time
+    timeoftheorder = instance.tijd + get_supplytime_stalen_stangen()
+    instance.supplyorders_stalenstangen_inprocess.insert(0,[timeoftheorder, reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
+    instance.nexteventtimes['supply stalen stangen'] = timeoftheorder
 
     return instance
 
 def event_order_new_koppeldraad(instance):
-    instance.t_newsupplyorder_koppeldraad += supply_order_interval_time
-
-    instance.supplyorders_koppeldraad_inprocess.insert(0,[instance.tijd + get_supplytime_koppeldraad(), reorder_upto_point_koppeldraad -instance.materialstate[1]['koppeldraad']])
-
+    instance.nexteventtimes['order new koppeldraad'] += supply_order_interval_time
+    timeoftheorder = instance.tijd + get_supplytime_koppeldraad()
+    instance.supplyorders_koppeldraad_inprocess.insert(0,[timeoftheorder, reorder_upto_point_koppeldraad -instance.materialstate[1]['koppeldraad']])
+    instance.nexteventtimes['supply koppeldraad'] = timeoftheorder
     return instance
 
 def event_order_new_stuffing(instance):
-    instance.t_newsupplyorder_stuffing += supply_order_interval_time
-
-    instance.supplyorders_stuffing_inprocess.insert(0,[instance.tijd + get_supplytime_stuffing(), {'soft stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing'], 'medium stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing'], 'hard stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing']}])
-
+    instance.nexteventtimes['order new stuffing'] += supply_order_interval_time
+    timeoftheorder = instance.tijd + get_supplytime_stuffing()
+    instance.supplyorders_stuffing_inprocess.insert(0,[timeoftheorder, {'soft stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing'], 'medium stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing'], 'hard stuffing': reorder_upto_point_koppeldraad - instance.materialstate[2]['soft stuffing']}])
+    instance.nexteventtimes['supply stuffing'] = timeoftheorder
     return instance
 
 def event_supplyorder_stalen_stangen(instance):
 
     instance.materialstate[0]['stalen stangen'] += instance.supplyorders_stalenstangen_inprocess[0][1]
     instance.supplyorders_stalenstangen_inprocess.pop(0)
+    instance.nexteventtimes['supply stalen stangen'] = instance.supplyorders_stalenstangen_inprocess[0][0]
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and all(instance.materialstate[0][i] >= instance.inventories[0][0][2]['bill of materials']['staal buigen'][i] for i in instance.inventories[0][0][2]['bill of materials']['staal buigen'].keys()):
@@ -388,7 +437,7 @@ def event_supplyorder_stalen_stangen(instance):
         instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
         instance.work_state[0][1] = instance.tijd
-        finish_time_this_order = instance.tijd + get_duration_staal_buigen()
+        finish_time_this_order = instance.tijd + get_length_staal_buigen()
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal buigen'] = instance.tijd
@@ -401,12 +450,15 @@ def event_supplyorder_stalen_stangen(instance):
 
         instance.orders_inprocess0.insert(finish_time_index, newprocessing_order)
 
+    instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
+
     return instance
 
 def event_supplyorder_koppeldraad(instance):
 
-    instance.materialstate[1]['koppeldraad'] += instance.supplyorders_stalenstangen_inprocess[0][1]
+    instance.materialstate[1]['koppeldraad'] += instance.supplyorders_koppeldraad_inprocess[0][1]
     instance.supplyorders_koppeldraad_inprocess.pop(0)
+    instance.nexteventtimes['supply koppeldraad'] = instance.supplyorders_koppeldraad_inprocess[0][0]
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1][0] >= instance.inventories[1][0][1] and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()):
@@ -418,7 +470,7 @@ def event_supplyorder_koppeldraad(instance):
         instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
         instance.work_state[1][0] += newprocessing_order[1]
         instance.work_state[1][1] = instance.tijd
-        finish_time_this_order = instance.tijd + get_duration_staal_koppelen()
+        finish_time_this_order = instance.tijd + get_length_staal_koppelen()
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal koppelen'] = instance.tijd
@@ -430,6 +482,7 @@ def event_supplyorder_koppeldraad(instance):
         newprocessing_order[0] = finish_time_this_order
 
         instance.orders_inprocess1.insert(finish_time_index, newprocessing_order)
+    instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
 
     return instance
 
@@ -439,6 +492,7 @@ def event_supplyorder_stuffing(instance):
     instance.materialstate[2]['medium stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['medium stuffing']
     instance.materialstate[2]['hard stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['hard stuffing']
     instance.supplyorders_stuffing_inprocess.pop(0)
+    instance.nexteventtimes['supply stuffing'] = instance.supplyorders_stuffing_inprocess[0][0]
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2][0] >= instance.inventories[2][0][1] and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()):
@@ -450,7 +504,7 @@ def event_supplyorder_stuffing(instance):
         instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
         instance.work_state[2][0] += newprocessing_order[1]
         instance.work_state[2][1] = instance.tijd
-        finish_time_this_order = instance.tijd + get_duration_omhulsel_plaatsen()
+        finish_time_this_order = instance.tijd + get_length_omhulsel_plaatsen()
         finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd omhulsel maken'] = instance.tijd
@@ -462,9 +516,45 @@ def event_supplyorder_stuffing(instance):
         newprocessing_order[0] = finish_time_this_order
 
         instance.orders_inprocess2.insert(finish_time_index, newprocessing_order)
+    instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
 
     return instance
 
+def event_staalbuigen_breakdown(instance):
+    instance.nexteventtimes['staal buigen breakdown'] = math.inf
+    instance.capacities[0] = 0
+    instance.nexteventtimes['fix staal buigen breakdown'] = instance.tijd + get_length_fix_staalbuigen_breakdown()
+    return instance
+
+def event_fixed_staalbuigen_breakdown(instance):
+    instance.nexteventtimes['staal buigen breakdown'] = instance.tijd + get_length_next_staalbuigen_breakdown()
+    instance.capacities[0] = 10
+    instance.nexteventtimes['fix staal buigen breakdown'] = math.inf
+    return instance
+
+def event_staalkoppelen_breakdown(instance):
+    instance.nexteventtimes['staal koppelen breakdown'] = math.inf
+    instance.capacities[1] = 0
+    instance.nexteventtimes['fix staal koppelen breakdown'] = instance.tijd + get_length_fix_staalkoppelen_breakdown()
+    return instance
+
+def event_fixed_staalkoppelen_breakdown(instance):
+    instance.nexteventtimes['staal koppelen breakdown'] = instance.tijd + get_length_next_staalkoppelen_breakdown()
+    instance.capacities[1] = 10
+    instance.nexteventtimes['fix staal koppelen breakdown'] = math.inf
+    return instance
+
+def event_omhulselmaken_breakdown(instance):
+    instance.nexteventtimes['omhulsel maken breakdown'] = math.inf
+    instance.capacities[2] = 0
+    instance.nexteventtimes['fix omhulsel maken breakdown'] = instance.tijd + get_length_fix_omhulselmaken_breakdown()
+    return instance
+
+def event_fixed_omhulselmaken_breakdown(instance):
+    instance.nexteventtimes['omhulsel maken breakdown'] = instance.tijd + get_length_next_omhulselmaken_breakdown()
+    instance.capacities[2] = 10
+    instance.nexteventtimes['fix omhulsel maken breakdown'] = math.inf
+    return instance
 
 def updatevariables(instance, event, next_t_event):
 
@@ -500,5 +590,23 @@ def updatevariables(instance, event, next_t_event):
 
     elif event == 'supply stuffing':
         instance = event_supplyorder_stuffing(instance)
+
+    elif event == 'staal buigen breakdown':
+        instance = event_staalbuigen_breakdown(instance)
+
+    elif event == 'staal koppelen breakdown':
+        instance = event_staalkoppelen_breakdown(instance)
+
+    elif event == 'omhulsel maken breakdown':
+        instance = event_omhulselmaken_breakdown(instance)
+
+    elif event == 'fix staal buigen breakdown':
+        instance = event_fixed_staalbuigen_breakdown(instance)
+
+    elif event == 'fix staal koppelen breakdown':
+        instance = event_fixed_staalkoppelen_breakdown(instance)
+
+    elif event == 'fix omhulsel maken breakdown':
+        instance = event_fixed_omhulselmaken_breakdown(instance)
 
     return instance
