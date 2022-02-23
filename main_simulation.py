@@ -18,7 +18,11 @@ import statistics
 import pandas as pd
 import plottingfunctions
 
-def runsimulation():
+
+
+
+def runsimulation(settingdistibution_dict):
+
     numberloops = 1
 
     totalinventorie_measure = []
@@ -43,19 +47,19 @@ def runsimulation():
             self.orders_inprocess0 = [[math.inf,0,initdict1]] #first list is the finish times, second the order sizes
             self.orders_inprocess1 = [[math.inf,0,initdict2]]
             self.orders_inprocess2 = [[math.inf,0,initdict3]]
-            self.nexteventtimes = {'new order': 480,
+            self.nexteventtimes = {'new order': Functions4simulation.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev']),
                                    "staal buigen klaar" : self.orders_inprocess0[0][0],
                                    "staal koppelen klaar": self.orders_inprocess1[0][0],
                                    "omhulsel klaar": self.orders_inprocess2[0][0],
                                    'supply stalen stangen':self.supplyorders_stalenstangen_inprocess[0][0],
                                    'supply koppeldraad': self.supplyorders_koppeldraad_inprocess[0][0],
                                    'supply stuffing': self.supplyorders_stuffing_inprocess[0][0],
-                                   'order new stalen stangen': 2400,
-                                   'order new koppeldraad': 2400,
-                                   'order new stuffing': 2400,
-                                   'staal buigen breakdown': Functions4simulation.get_length_next_staalbuigen_breakdown(),
-                                   'staal koppelen breakdown': Functions4simulation.get_length_next_staalkoppelen_breakdown(),
-                                   'omhulsel maken breakdown': Functions4simulation.get_length_next_omhulselmaken_breakdown(),
+                                   'order new stalen stangen': settingdistibution_dict['supply interval order'],
+                                   'order new koppeldraad': settingdistibution_dict['supply interval order'],
+                                   'order new stuffing': settingdistibution_dict['supply interval order'],
+                                   'staal buigen breakdown': Functions4simulation.get_length_next_staalbuigen_breakdown(settingdistibution_dict['mean staal buigen breakdown']),
+                                   'staal koppelen breakdown': Functions4simulation.get_length_next_staalkoppelen_breakdown(settingdistibution_dict['mean staal koppelen breakdown']),
+                                   'omhulsel maken breakdown': Functions4simulation.get_length_next_omhulselmaken_breakdown(settingdistibution_dict['mean omhulsel maken breakdown']),
                                    'fix staal buigen breakdown': math.inf,
                                    'fix staal koppelen breakdown': math.inf,
                                    'fix omhulsel maken breakdown': math.inf}
@@ -76,14 +80,14 @@ def runsimulation():
         curtimeinterval = 4800000
         timeinterval = 480000
 
-        while instance.tijd <= 480000:
+        while instance.tijd <= 4800000:
             previoustime = instance.tijd
             if instance.tijd > curtimeinterval:
                 print('current time in simulation is: ', curtimeinterval)
                 curtimeinterval += timeinterval
             next_event = min(instance.nexteventtimes, key=instance.nexteventtimes.get)
             next_t_event = instance.nexteventtimes[next_event]
-            instance = Functions4simulation.updatevariables(instance, next_event, next_t_event)
+            instance = Functions4simulation.updatevariables(instance, next_event, next_t_event, settingdistibution_dict)
             #print('tijd: ', instance.tijd)
             #print('inventories: ', sum(instance.inventories[0]), sum(instance.inventories[1]), sum(instance.inventories[2]))
 
@@ -97,6 +101,21 @@ def runsimulation():
 
     finished_orders_df['total queue time'] = [finished_orders_df['tijd inventory staal buigen'][i] + finished_orders_df['tijd inventory staal koppelen'][i] + finished_orders_df['tijd inventory omhulsel maken'][i] for i in range(len(finished_orders_df))]
 
+    means = {'total process time': finished_orders_df['total process time'].mean(), 'total queue time': finished_orders_df['total queue time'].mean(), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].mean(), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].mean(),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].mean(),
+             'staal buigen': finished_orders_df['tijd staal buigen'].mean(), 'staal koppelen': finished_orders_df['tijd staal koppelen'].mean(), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].mean()}
+
+    lower_5_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.05), 'total queue time': finished_orders_df['total queue time'].quantile(.05), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].quantile(.05), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].quantile(.05),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.05),
+             'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.05), 'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.05), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.05)}
+
+    upper_95_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.95),
+                         'total queue time': finished_orders_df['total queue time'].quantile(.95),
+                         'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].quantile(.95),
+                         'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].quantile(.95),
+                         'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.95),
+                         'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.95),
+                         'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.95),
+                         'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.95)}
+
     #########
     # Make dataframe of all finished orders
     #########
@@ -107,7 +126,7 @@ def runsimulation():
 
     fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time = plottingfunctions.Make_kpi_figures(finished_orders_df)
 
-    return fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
+    return means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
 
 
 #fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")
