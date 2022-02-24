@@ -140,16 +140,19 @@ def get_neworderinfo(Mean_ordersize, stdev_ordersize):
 
     return orderID, ordersize, softness, sizethisorder, billofmaterials
 
+###### ----------- BELOW are event functions, above are time/size functions
 
 def event_neworder(instance, settingdistibution_dict):
 
     orderID, ordersize, softness, sizethisorder, billofmaterials = get_neworderinfo(settingdistibution_dict['order size mean'], settingdistibution_dict['order size stdev'])
 
-    orderdict = {'orderID': orderID, 'softnesstype': softness, 'size': sizethisorder, 'bill of materials': billofmaterials, 'time received': instance.tijd}
+    orderdict = {'orderID': orderID, 'softnesstype': softness, 'size': sizethisorder, 'bill of materials': billofmaterials, 'time received': instance.tijd,
+                 'reason inventory staal buigen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
+                 'reason inventory staal koppelen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
+                 'reason inventory omhulsel maken':{'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]}}
 
     #instance.t_neworder = instance.tijd + get_length_neworder()
     instance.nexteventtimes['new order'] = instance.tijd + get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev'])
-
     if instance.capacities[0] - instance.work_state[0][0] >= ordersize and len(instance.inventories[0]) == 0 and all(instance.materialstate[0][i] >= orderdict['bill of materials']['staal buigen'][i] for i in orderdict['bill of materials']['staal buigen'].keys()):
 
         for i in orderdict['bill of materials']['staal buigen'].keys():
@@ -161,7 +164,7 @@ def event_neworder(instance, settingdistibution_dict):
             instance.supplyorders_stalenstangen_inprocess.insert(0,[instance.tijd + get_supplytime_stalen_stangen(), reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
         '''
 
-        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += ordersize
         instance.work_state[0][1] = instance.tijd
         finish_time_this_order =  instance.tijd + get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'])
@@ -180,6 +183,13 @@ def event_neworder(instance, settingdistibution_dict):
         orderdict['start tijd inventory staal buigen'] = instance.tijd
         instance.inventories[0].append([math.inf, ordersize, orderdict])
 
+        # update measures // reason of going into inventory(queue)
+        if all(instance.materialstate[0][i] >= instance.inventories[0][0][2]['bill of materials']['staal buigen'][i] for i in instance.inventories[0][0][2]['bill of materials']['staal buigen'].keys()) == False:
+            orderdict['reason inventory staal buigen']['supply shortage'].append([instance.tijd])
+        if instance.capacities[0] == 0:
+            orderdict['reason inventory staal buigen']['breakdown'].append([instance.tijd])
+
+
     instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
 
     return instance
@@ -187,7 +197,7 @@ def event_neworder(instance, settingdistibution_dict):
 def event_staal_buigen_klaar(instance, settingdistibution_dict):
     # update the machine itself
     processed_order = instance.orders_inprocess0.pop(0)
-    instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+    instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
     instance.work_state[0][0] -= processed_order[1]
     instance.work_state[0][1] = instance.tijd
 
@@ -205,7 +215,7 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
         '''
 
 
-        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
         instance.work_state[0][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'])
@@ -223,7 +233,7 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
 
     # what goes out of the machine:
     if instance.capacities[1] - instance.work_state[1][0] >= processed_order[1] and len(instance.inventories[1]) == 0 and all(instance.materialstate[1][i] >= processed_order[2]['bill of materials']['staal koppelen'][i] for i in processed_order[2]['bill of materials']['staal koppelen'].keys()):
-        instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.measures['workstate times'][1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
         instance.work_state[1][0] += processed_order[1]
         instance.work_state[1][1] = instance.tijd
 
@@ -247,6 +257,17 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
     else:
         processed_order[0] = math.inf
         processed_order[2]['start tijd inventory staal koppelen'] = instance.tijd
+
+        # if breakdown, houdt dit bij in de measure van de order
+        if instance.capacities[1] == 0:
+            processed_order[2]['reason inventory staal koppelen']['breakdown'].append([instance.tijd])
+        if len(instance.inventories[1]) >0:
+            if all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()) == False:
+                processed_order['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
+        else:
+            if all(instance.materialstate[1][i] >= processed_order[2]['bill of materials']['staal koppelen'][i] for i in processed_order[2]['bill of materials']['staal koppelen'].keys()) == False:
+                processed_order['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
+
         instance.inventories[1].append(processed_order)
 
     instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
@@ -257,7 +278,7 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
 def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     # update the machine itself
     processed_order = instance.orders_inprocess1.pop(0)
-    instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+    instance.measures['workstate times'][1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
     instance.work_state[1][0] -= processed_order[1]
     instance.work_state[1][1] = instance.tijd
 
@@ -265,7 +286,7 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1][0] >= instance.inventories[1][0][1] and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()):
         newprocessing_order = instance.inventories[1].pop(0)
 
-        instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.measures['workstate times'][1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
         instance.work_state[1][0] += newprocessing_order[1]
         instance.work_state[1][1] = instance.tijd
 
@@ -287,7 +308,7 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
 
     # what goes out of the machine:
     if instance.capacities[2] - instance.work_state[2][0] >= processed_order[1] and len(instance.inventories[2]) == 0 and all(instance.materialstate[2][i] >= processed_order[2]['bill of materials']['omhulsel maken'][i] for i in processed_order[2]['bill of materials']['omhulsel maken'].keys()):
-        instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.measures['workstate times'][2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
         instance.work_state[2][0] += processed_order[1]
         instance.work_state[2][1] = instance.tijd
 
@@ -311,6 +332,17 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     else:
         processed_order[0] = math.inf
         processed_order[2]['start tijd inventory omhulsel maken'] = instance.tijd
+
+        # if breakdown, houdt dit bij in de measure van de order
+        if instance.capacities[2] == 0:
+            processed_order[2]['reason inventory omhulsel maken']['breakdown'].append([instance.tijd])
+        if len(instance.inventories[2]) >0:
+            if all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()) == False:
+                processed_order['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
+        else:
+            if all(instance.materialstate[2][i] >= processed_order[2]['bill of materials']['omhulsel maken'][i] for i in processed_order[2]['bill of materials']['omhulsel maken'].keys()) == False:
+                processed_order['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
+
         instance.inventories[2].append(processed_order)
 
     instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
@@ -321,7 +353,7 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
 def event_omhulsel_klaar(instance, settingdistibution_dict):
     # update the machine itself
     processed_order = instance.orders_inprocess2.pop(0)
-    instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+    instance.measures['workstate times'][2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
     instance.work_state[2][0] -= processed_order[1]
     instance.work_state[2][1] = instance.tijd
 
@@ -337,7 +369,7 @@ def event_omhulsel_klaar(instance, settingdistibution_dict):
     while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2][0] >= instance.inventories[2][0][1] and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()):
         newprocessing_order = instance.inventories[2].pop(0)
 
-        instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.measures['workstate times'][2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
         instance.work_state[2][0] += newprocessing_order[1]
         instance.work_state[2][1] = instance.tijd
 
@@ -388,6 +420,11 @@ def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
     instance.supplyorders_stalenstangen_inprocess.pop(0)
     instance.nexteventtimes['supply stalen stangen'] = instance.supplyorders_stalenstangen_inprocess[0][0]
 
+    # update supply shortage measure of the orders in inventory
+    for i in range(len(instance.inventories[0])):
+        if len(instance.inventories[0][i][2]['reason inventory staal buigen']['supply shortage']) > 0 and len(instance.inventories[0][i][2]['reason inventory staal buigen']['supply shortage'][-1]) == 1:
+            instance.inventories[0][i][2]['reason inventory staal buigen']['supply shortage'][-1].append(instance.tijd)
+
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and all(instance.materialstate[0][i] >= instance.inventories[0][0][2]['bill of materials']['staal buigen'][i] for i in instance.inventories[0][0][2]['bill of materials']['staal buigen'].keys()):
         newprocessing_order = instance.inventories[0].pop(0)
@@ -395,7 +432,7 @@ def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
         for i in newprocessing_order[2]['bill of materials']['staal buigen'].keys():
             instance.materialstate[0][i] -= newprocessing_order[2]['bill of materials']['staal buigen'][i]
 
-        instance.work_state_times[0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
         instance.work_state[0][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'])
@@ -421,6 +458,11 @@ def event_supplyorder_koppeldraad(instance, settingdistibution_dict):
     instance.supplyorders_koppeldraad_inprocess.pop(0)
     instance.nexteventtimes['supply koppeldraad'] = instance.supplyorders_koppeldraad_inprocess[0][0]
 
+    # update supply shortage measure of the orders in inventory
+    for i in range(len(instance.inventories[1])):
+        if len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage']) > 0 and len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1]) == 1:
+            instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1].append(instance.tijd)
+
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1][0] >= instance.inventories[1][0][1] and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()):
         newprocessing_order = instance.inventories[1].pop(0)
@@ -428,7 +470,7 @@ def event_supplyorder_koppeldraad(instance, settingdistibution_dict):
         for i in newprocessing_order[2]['bill of materials']['staal koppelen'].keys():
             instance.materialstate[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen'][i]
 
-        instance.work_state_times[1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.measures['workstate times'][1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
         instance.work_state[1][0] += newprocessing_order[1]
         instance.work_state[1][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'])
@@ -455,6 +497,11 @@ def event_supplyorder_stuffing(instance, settingdistibution_dict):
     instance.supplyorders_stuffing_inprocess.pop(0)
     instance.nexteventtimes['supply stuffing'] = instance.supplyorders_stuffing_inprocess[0][0]
 
+    # update supply shortage measure of the orders in inventory
+    for i in range(len(instance.inventories[2])):
+        if len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage']) > 0 and len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1]) == 1:
+            instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1].append(instance.tijd)
+
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
     while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2][0] >= instance.inventories[2][0][1] and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()):
         newprocessing_order = instance.inventories[2].pop(0)
@@ -462,7 +509,7 @@ def event_supplyorder_stuffing(instance, settingdistibution_dict):
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken'].keys():
             instance.materialstate[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken'][i]
 
-        instance.work_state_times[2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.measures['workstate times'][2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
         instance.work_state[2][0] += newprocessing_order[1]
         instance.work_state[2][1] = instance.tijd
         finish_time_this_order = instance.tijd + get_length_omhulsel_plaatsen(settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time'])
@@ -485,36 +532,150 @@ def event_staalbuigen_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['staal buigen breakdown'] = math.inf
     instance.capacities[0] = 0
     instance.nexteventtimes['fix staal buigen breakdown'] = instance.tijd + get_length_fix_staalbuigen_breakdown(settingdistibution_dict['mean fix staal buigen breakdown'])
+
+    for i in range(len(instance.inventories[0])):
+        instance.inventories[0][i][2]['reason inventory staal buigen']['breakdown'].append([instance.tijd])
+
+    # update measures
+    instance.measures['breakdown periods']['staal buigen'].append([instance.tijd])
+
     return instance
 
 def event_fixed_staalbuigen_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['staal buigen breakdown'] = instance.tijd + get_length_next_staalbuigen_breakdown(settingdistibution_dict['mean staal buigen breakdown'])
     instance.capacities[0] = settingdistibution_dict['capacity staal buigen']
     instance.nexteventtimes['fix staal buigen breakdown'] = math.inf
+
+    for i in range(len(instance.inventories[0])):
+        instance.inventories[0][i][2]['reason inventory staal buigen']['breakdown'][-1].append(instance.tijd)
+
+    #if this capacity was needed for orders to start, start them
+    while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and all(instance.materialstate[0][i] >= instance.inventories[0][0][2]['bill of materials']['staal buigen'][i] for i in instance.inventories[0][0][2]['bill of materials']['staal buigen'].keys()):
+        newprocessing_order = instance.inventories[0].pop(0)
+
+        # update breakdown measure of the orders in inventory
+        for i in newprocessing_order[2]['bill of materials']['staal buigen'].keys():
+            instance.materialstate[0][i] -= newprocessing_order[2]['bill of materials']['staal buigen'][i]
+
+        instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
+        instance.work_state[0][0] += newprocessing_order[1]
+        instance.work_state[0][1] = instance.tijd
+        finish_time_this_order = instance.tijd + get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'])
+        finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
+
+        newprocessing_order[2]['start tijd staal buigen'] = instance.tijd
+        newprocessing_order[2]['eind tijd staal buigen'] = finish_time_this_order
+        newprocessing_order[2]['tijd staal buigen'] = finish_time_this_order - instance.tijd
+        newprocessing_order[2]['eind tijd inventory staal buigen'] = instance.tijd
+        newprocessing_order[2]['tijd inventory staal buigen'] = instance.tijd - newprocessing_order[2]['start tijd inventory staal buigen']
+
+        newprocessing_order[0] = finish_time_this_order
+
+        instance.orders_inprocess0.insert(finish_time_index, newprocessing_order)
+
+    instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
+
+    # update measures
+    instance.measures['breakdown periods']['staal buigen'][-1].append(instance.tijd)
     return instance
 
 def event_staalkoppelen_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['staal koppelen breakdown'] = math.inf
     instance.capacities[1] = 0
     instance.nexteventtimes['fix staal koppelen breakdown'] = instance.tijd + get_length_fix_staalkoppelen_breakdown(settingdistibution_dict['mean fix staal koppelen breakdown'])
+
+    for i in range(len(instance.inventories[1])):
+        instance.inventories[1][i][2]['reason inventory staal koppelen']['breakdown'].append([instance.tijd])
+
+    # update measures
+    instance.measures['breakdown periods']['staal koppelen'].append([instance.tijd])
     return instance
 
 def event_fixed_staalkoppelen_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['staal koppelen breakdown'] = instance.tijd + get_length_next_staalkoppelen_breakdown(settingdistibution_dict['mean staal koppelen breakdown'])
     instance.capacities[1] = settingdistibution_dict['capacity staal koppelen']
     instance.nexteventtimes['fix staal koppelen breakdown'] = math.inf
+
+    # update breakdown measure of the orders in inventory
+    for i in range(len(instance.inventories[1])):
+        instance.inventories[1][i][2]['reason inventory staal koppelen']['breakdown'][-1].append(instance.tijd)
+
+    #if this capacity was needed for orders to start, start them
+    while len(instance.inventories[1]) > 0 and instance.capacities[1] - instance.work_state[1][0] >= instance.inventories[1][0][1] and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()):
+        newprocessing_order = instance.inventories[1].pop(0)
+
+        for i in newprocessing_order[2]['bill of materials']['staal koppelen'].keys():
+            instance.materialstate[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen'][i]
+
+        instance.measures['workstate times'][1][instance.work_state[1][0]] += instance.tijd - instance.work_state[1][1]
+        instance.work_state[1][0] += newprocessing_order[1]
+        instance.work_state[1][1] = instance.tijd
+        finish_time_this_order = instance.tijd + get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'])
+        finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
+
+        newprocessing_order[2]['start tijd staal koppelen'] = instance.tijd
+        newprocessing_order[2]['eind tijd staal koppelen'] = finish_time_this_order
+        newprocessing_order[2]['tijd staal koppelen'] = finish_time_this_order - instance.tijd
+        newprocessing_order[2]['eind tijd inventory staal koppelen'] = instance.tijd
+        newprocessing_order[2]['tijd inventory staal koppelen'] = instance.tijd - newprocessing_order[2]['start tijd inventory staal koppelen']
+
+        newprocessing_order[0] = finish_time_this_order
+
+        instance.orders_inprocess1.insert(finish_time_index, newprocessing_order)
+
+    instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
+
+    # update measures
+    instance.measures['breakdown periods']['staal koppelen'][-1].append(instance.tijd)
     return instance
 
 def event_omhulselmaken_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['omhulsel maken breakdown'] = math.inf
     instance.capacities[2] = 0
     instance.nexteventtimes['fix omhulsel maken breakdown'] = instance.tijd + get_length_fix_omhulselmaken_breakdown(settingdistibution_dict['mean fix omhulsel maken breakdown'])
+
+    for i in range(len(instance.inventories[2])):
+        instance.inventories[2][i][2]['reason inventory omhulsel maken']['breakdown'].append([instance.tijd])
+
+    # update measures
+    instance.measures['breakdown periods']['omhulsel maken'].append([instance.tijd])
     return instance
 
 def event_fixed_omhulselmaken_breakdown(instance, settingdistibution_dict):
     instance.nexteventtimes['omhulsel maken breakdown'] = instance.tijd + get_length_next_omhulselmaken_breakdown(settingdistibution_dict['mean omhulsel maken breakdown'])
     instance.capacities[2] = settingdistibution_dict['capacity omhulsel maken']
     instance.nexteventtimes['fix omhulsel maken breakdown'] = math.inf
+
+    # update breakdown measure of the orders in inventory
+    for i in range(len(instance.inventories[2])):
+        instance.inventories[2][i][2]['reason inventory omhulsel maken']['breakdown'][-1].append(instance.tijd)
+
+    # if this capacity was needed for orders to start, start them
+    while len(instance.inventories[2]) > 0 and instance.capacities[2] - instance.work_state[2][0] >= instance.inventories[2][0][1] and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()):
+        newprocessing_order = instance.inventories[2].pop(0)
+
+        for i in newprocessing_order[2]['bill of materials']['omhulsel maken'].keys():
+            instance.materialstate[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken'][i]
+
+        instance.measures['workstate times'][2][instance.work_state[2][0]] += instance.tijd - instance.work_state[2][1]
+        instance.work_state[2][0] += newprocessing_order[1]
+        instance.work_state[2][1] = instance.tijd
+        finish_time_this_order = instance.tijd + get_length_omhulsel_plaatsen(settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time'])
+        finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])
+
+        newprocessing_order[2]['start tijd omhulsel maken'] = instance.tijd
+        newprocessing_order[2]['eind tijd omhulsel maken'] = finish_time_this_order
+        newprocessing_order[2]['tijd omhulsel maken'] = finish_time_this_order - instance.tijd
+        newprocessing_order[2]['eind tijd inventory omhulsel maken'] = instance.tijd
+        newprocessing_order[2]['tijd inventory omhulsel maken'] = instance.tijd - newprocessing_order[2]['start tijd inventory omhulsel maken']
+
+        newprocessing_order[0] = finish_time_this_order
+
+        instance.orders_inprocess2.insert(finish_time_index, newprocessing_order)
+    instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
+
+    # update measures
+    instance.measures['breakdown periods']['omhulsel maken'][-1].append(instance.tijd)
     return instance
 
 def updatevariables(instance, event, next_t_event, settingdistibution_dict):

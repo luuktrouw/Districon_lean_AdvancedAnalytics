@@ -27,11 +27,11 @@ supply_order_interval_time = 2400
 Mean_supplytime_stalen_stangen = 480
 stdev_supplytime_stalen_stangen = 0
 #eorderpoint_stalenstangen = 20
-reorder_upto_point_stalenstangen = 1000
+reorder_upto_point_stalenstangen = 100
 
 Mean_supplytime_koppeldraad = 480
 stdev_supplytime_koppeldraad = 0
-reorder_upto_point_koppeldraad = 1000
+reorder_upto_point_koppeldraad = 100
 
 Mean_supplytime_stuffing = 480
 stdev_supplytime_stuffing = 0
@@ -51,9 +51,9 @@ stdev_process2time = 20
 Mean_schakel_staalbuigen_breakdown = 24000
 Mean_schakel_staalkoppelen_breakdown = 24000
 Mean_schakel_omhulselmaken_breakdown = 24000
-Mean_fix_staalbuigen_breakdown = 4800
-Mean_fix_staalkoppelen_breakdown = 4800
-Mean_fix_omhulselmaken_breakdown = 4800
+Mean_fix_staalbuigen_breakdown = 480
+Mean_fix_staalkoppelen_breakdown = 480
+Mean_fix_omhulselmaken_breakdown = 480
 
 settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev': stdev_ordertime,
                            'order size mean': Mean_ordersize, 'order size stdev': stdev_ordersize,

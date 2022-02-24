@@ -1,3 +1,4 @@
+import pandas as pd
 import plotly.express as px
 
 
@@ -43,6 +44,18 @@ def total_through_time(finished_orders_df):
     fig = px.histogram(finished_orders_df, x="total process time")
     fig.show()
 
+
+def plot_gantt_disruptions_per_order(finished_orders_df):
+    disuptions = finished_orders_df['reason inventory staal buigen']
+    disruptionsdf = pd.DataFrame(disuptions)
+
+    return 1
+
+def plot_gantt_disruptions(measures):
+    disuptions =
+    disruptionsdf = pd.DataFrame(disuptions)
+
+    return 1
 
 def Make_kpi_figures(finished_orders_df):
 
