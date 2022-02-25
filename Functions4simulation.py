@@ -263,10 +263,10 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
             processed_order[2]['reason inventory staal koppelen']['breakdown'].append([instance.tijd])
         if len(instance.inventories[1]) >0:
             if all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen'].keys()) == False:
-                processed_order['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
+                processed_order[2]['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
         else:
             if all(instance.materialstate[1][i] >= processed_order[2]['bill of materials']['staal koppelen'][i] for i in processed_order[2]['bill of materials']['staal koppelen'].keys()) == False:
-                processed_order['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
+                processed_order[2]['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
 
         instance.inventories[1].append(processed_order)
 
@@ -338,10 +338,10 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
             processed_order[2]['reason inventory omhulsel maken']['breakdown'].append([instance.tijd])
         if len(instance.inventories[2]) >0:
             if all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken'].keys()) == False:
-                processed_order['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
+                processed_order[2]['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
         else:
             if all(instance.materialstate[2][i] >= processed_order[2]['bill of materials']['omhulsel maken'][i] for i in processed_order[2]['bill of materials']['omhulsel maken'].keys()) == False:
-                processed_order['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
+                processed_order[2]['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
 
         instance.inventories[2].append(processed_order)
 

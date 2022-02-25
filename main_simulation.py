@@ -64,8 +64,13 @@ def runsimulation(settingdistibution_dict):
                                    'fix staal koppelen breakdown': math.inf,
                                    'fix omhulsel maken breakdown': math.inf}
             self.amountproduced = 0
-            self.capacities = [10,10,10]
-            self.work_state_times = [{i: 0 for i in range(self.capacities[0] + 1)}, {i: 0 for i in range(self.capacities[1] + 1)}, {i: 0 for i in range(self.capacities[2] + 1)}]
+            self.capacities = [settingdistibution_dict['capacity staal buigen'],settingdistibution_dict['capacity staal koppelen'],settingdistibution_dict['capacity omhulsel maken']]
+            self.measures = {'workstate times':[{i: 0 for i in range(self.capacities[0] + 1)},
+                                                {i: 0 for i in range(self.capacities[1] + 1)},
+                                                {i: 0 for i in range(self.capacities[2] + 1)}],
+                             'breakdown periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]},
+                             'supply shortage periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]}
+                             }
             self.finishedorders = [] # list consisting of dictionaries of orders
 
             # measures
@@ -78,9 +83,9 @@ def runsimulation(settingdistibution_dict):
         instance = instancezero()
 
         curtimeinterval = 4800000
-        timeinterval = 480000
+        timeinterval = 4800000
 
-        while instance.tijd <= 4800000:
+        while instance.tijd <= 480000:
             previoustime = instance.tijd
             if instance.tijd > curtimeinterval:
                 print('current time in simulation is: ', curtimeinterval)
@@ -120,13 +125,15 @@ def runsimulation(settingdistibution_dict):
     # Make dataframe of all finished orders
     #########
 
-    work_state_times_df = pd.DataFrame(instance.work_state_times)
+    work_state_times_df = pd.DataFrame(instance.measures['workstate times'])
 
     #print_inventory = [[totalinventorie_measure[i][0][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][0]))]  , [totalinventorie_measure[i][1][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][1]))]  ,  [totalinventorie_measure[i][2][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][2]))] ]
 
     fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time = plottingfunctions.Make_kpi_figures(finished_orders_df)
 
-    return means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
+    fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
+
+    return means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
 
 
 #fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")

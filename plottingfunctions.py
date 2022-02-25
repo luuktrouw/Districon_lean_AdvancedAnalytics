@@ -52,10 +52,54 @@ def plot_gantt_disruptions_per_order(finished_orders_df):
     return 1
 
 def plot_gantt_disruptions(measures):
-    disuptions =
-    disruptionsdf = pd.DataFrame(disuptions)
+    dict_disruption_periods = {'disruptions_names': [], 'disruptions_begins':[], 'disruptions_ends':[]}
 
-    return 1
+    #append dict with the breakdown periods
+    for i in range(len(measures['breakdown periods']['staal buigen'])):
+        dict_disruption_periods['disruptions_names'].append('breakdowns staal buigen')
+        dict_disruption_periods['disruptions_begins'].append(str(measures['breakdown periods']['staal buigen'][i][0]))
+        dict_disruption_periods['disruptions_ends'].append(str(measures['breakdown periods']['staal buigen'][i][1]))
+
+    # for i in range(len(measures['breakdown periods']['staal koppelen'])):
+    #     dict_disruption_periods['disruptions_names'].append('breakdowns staal koppelen')
+    #     dict_disruption_periods['disruptions_begins'].append(measures['breakdown periods']['staal koppelen'][i][0])
+    #     dict_disruption_periods['disruptions_ends'].append(measures['breakdown periods']['staal koppelen'][i][1])
+    #
+    # for i in range(len(measures['breakdown periods']['omhulsel maken'])):
+    #     dict_disruption_periods['disruptions_names'].append('breakdowns omhulsel maken')
+    #     dict_disruption_periods['disruptions_begins'].append(measures['breakdown periods']['omhulsel maken'][i][0])
+    #     dict_disruption_periods['disruptions_ends'].append(measures['breakdown periods']['omhulsel maken'][i][1])
+    #
+    # #append dict with the supply shortages periods
+    # for i in range(len(measures['supply shortage periods']['staal buigen'])):
+    #     dict_disruption_periods['disruptions_names'].append('supply shortages staal buigen')
+    #     dict_disruption_periods['disruptions_begins'].append(measures['supply shortage periods']['staal buigen'][i][0])
+    #     dict_disruption_periods['disruptions_ends'].append(measures['supply shortage periods']['staal buigen'][i][1])
+    #
+    # for i in range(len(measures['supply shortage periods']['staal koppelen'])):
+    #     dict_disruption_periods['disruptions_names'].append('supply shortages staal koppelen')
+    #     dict_disruption_periods['disruptions_begins'].append(measures['supply shortage periods']['staal koppelen'][i][0])
+    #     dict_disruption_periods['disruptions_ends'].append(measures['supply shortage periods']['staal koppelen'][i][1])
+    #
+    # for i in range(len(measures['supply shortage periods']['omhulsel maken'])):
+    #     dict_disruption_periods['disruptions_names'].append('supply shortages omhulsel maken')
+    #     dict_disruption_periods['disruptions_begins'].append(measures['supply shortage periods']['omhulsel maken'][i][0])
+    #     dict_disruption_periods['disruptions_ends'].append(measures['supply shortage periods']['omhulsel maken'][i][1])
+
+    fig_all_disruptions_gantt = px.timeline(dict_disruption_periods,
+                                            x_start = dict_disruption_periods['disruptions_begins'],
+                                            x_end=dict_disruption_periods['disruptions_ends'],
+                                            y = dict_disruption_periods['disruptions_names'])
+    test = {'names': ['hoi','hoi'], 'begins': ['2017-01-01','2017-02-15'], 'ends': ['2017-02-02','2017-03-15']}
+    test =pd.DataFrame.from_dict(test)
+    testfig =  px.timeline(dict_disruption_periods,
+                                            x_start = test['begins'],
+                                            x_end=test['ends'],
+                                            y = test['names'])
+    testfig.show()
+    fig_all_disruptions_gantt.show()
+
+    return fig_all_disruptions_gantt
 
 def Make_kpi_figures(finished_orders_df):
 

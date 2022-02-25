@@ -137,7 +137,7 @@ fig_table_speelveld = go.Figure(data=[go.Table(
 
 ##------------------------------------
 
-means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time = main_simulation.runsimulation(settingdistibution_dict)
+means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
 
 fig_VSM_statistics = go.Figure(data=[go.Table(
     header=dict(values=['process step',"inv staal buigen", 'staal buigen', 'inv staal koppelen', 'staal koppelen',
@@ -176,7 +176,8 @@ app.layout = html.Div([
             #dcc.Graph(id = 'total queue time', figure = fig_total_queue_time),
             #dcc.Graph(id = 'queue time staal buigen', figure = fig_queue_time_staal_buigen),
             #dcc.Graph(id = 'queue time staal koppelen', figure = fig_queue_time_staal_koppelen),
-            dcc.Graph(id = 'process measure', figure ={})
+            dcc.Graph(id = 'process measure', figure ={}),
+            dcc.Graph(id = 'disruption_periods',figure =  fig_gantt_disruptions),
 
 
 
