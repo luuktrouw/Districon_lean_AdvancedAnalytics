@@ -85,7 +85,7 @@ def runsimulation(settingdistibution_dict):
         curtimeinterval = 4800000
         timeinterval = 4800000
 
-        while instance.tijd <= 480000:
+        while instance.tijd <= 4800000:
             previoustime = instance.tijd
             if instance.tijd > curtimeinterval:
                 print('current time in simulation is: ', curtimeinterval)
@@ -133,7 +133,11 @@ def runsimulation(settingdistibution_dict):
 
     fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
 
-    return means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
+
+    sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+    fig_some_order = plottingfunctions.plot_gantt_disruptions_per_order( finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
+
+    return finished_orders_df, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
 
 
 #fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")

@@ -31,7 +31,7 @@ reorder_upto_point_stalenstangen = 100
 
 Mean_supplytime_koppeldraad = 480
 stdev_supplytime_koppeldraad = 0
-reorder_upto_point_koppeldraad = 100
+reorder_upto_point_koppeldraad = 10
 
 Mean_supplytime_stuffing = 480
 stdev_supplytime_stuffing = 0
@@ -137,7 +137,7 @@ fig_table_speelveld = go.Figure(data=[go.Table(
 
 ##------------------------------------
 
-means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
+finished_orders_df, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
 
 fig_VSM_statistics = go.Figure(data=[go.Table(
     header=dict(values=['process step',"inv staal buigen", 'staal buigen', 'inv staal koppelen', 'staal koppelen',
