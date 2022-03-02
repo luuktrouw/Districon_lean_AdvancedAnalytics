@@ -87,7 +87,7 @@ def plot_gantt_disruptions(measures):
                                             x_end=dict_disruption_periods['disruptions_ends'],
                                             y = dict_disruption_periods['disruptions_names'])
 
-    fig_all_disruptions_gantt.show()
+    #fig_all_disruptions_gantt.show()
 
     return fig_all_disruptions_gantt
 
@@ -135,15 +135,44 @@ def plot_gantt_disruptions_per_order(finishedordersdf, ordername):
     #set range as receiving order until finishing order
     fig_disruptions_order_gantt.update_xaxes(range = [datetime.datetime.fromtimestamp(orderdf['time received']), datetime.datetime.fromtimestamp(orderdf['finish time'])])
 
-    fig_disruptions_order_gantt.show()
+    #fig_disruptions_order_gantt.show()
 
     return fig_disruptions_order_gantt
 
+def plot_fractions_wait_time_reasons(finishedordersdf):
+
+    # neemt totaal van alle processen, dus niet specifiek voor staal buigen bijvoorbeeld
+    sum_other_wait_time = 0
+    sum_wait_time_shortage_supply = 0
+    sum_wait_time_breakdowns = 0
+    for i in range(len(finishedordersdf)):
+        sum_other_wait_time += finishedordersdf.iloc[i]['total queue time']
+
+        # loop over alle process stappen & dan disruptions erin
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'])):
+            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][0]
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'])):
+            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'])):
+            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
+
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'])):
+            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][0]
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'])):
+            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][0]
+        for j in range(len(finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'])):
+            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][0]
+
+    sum_other_wait_time -= sum_wait_time_shortage_supply + sum_wait_time_breakdowns
+
+    fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
+    #fig.show()
+    return fig
 
 def Make_kpi_figures(finished_orders_df):
 
     fig_total_thoughout_time = px.histogram(finished_orders_df, x = 'total process time')
-    fig_total_thoughout_time.show()
+    #fig_total_thoughout_time.show()
 
     fig_queue_time_staal_buigen = px.histogram(finished_orders_df, x='tijd inventory staal buigen')
     #fig_queue_time_staal_buigen.show()
@@ -158,8 +187,5 @@ def Make_kpi_figures(finished_orders_df):
     #fig_total_queue_time.show()
 
     return fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time
-
-
-    fig_total_queue_time = 1
 
 

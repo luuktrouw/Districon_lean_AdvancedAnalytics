@@ -6,6 +6,7 @@ import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 import main_simulation
+import plottingfunctions
 
 #https://www.youtube.com/watch?v=hSPmj7mK6ng
 
@@ -25,20 +26,21 @@ stdev_ordersize = 1
 # supply
 supply_order_interval_time = 2400
 Mean_supplytime_stalen_stangen = 480
-stdev_supplytime_stalen_stangen = 0
+stdev_supplytime_stalen_stangen = 20
 #eorderpoint_stalenstangen = 20
 reorder_upto_point_stalenstangen = 100
 
 Mean_supplytime_koppeldraad = 480
-stdev_supplytime_koppeldraad = 0
-reorder_upto_point_koppeldraad = 10
+stdev_supplytime_koppeldraad = 20
+reorder_upto_point_koppeldraad = 55
 
 Mean_supplytime_stuffing = 480
-stdev_supplytime_stuffing = 0
-reorder_upto_point_softstuffing = 1000
-reorder_upto_point_mediumstuffing = 1000
-reorder_upto_point_hardstuffing = 1000
+stdev_supplytime_stuffing = 20
+reorder_upto_point_softstuffing = 5
+reorder_upto_point_mediumstuffing = 5
+reorder_upto_point_hardstuffing = 5
 
+stdev_order_quantity_percentage_of_quantity = 0.01
 # distributions processes
 Mean_process0time = 720
 Mean_process1time = 650
@@ -77,7 +79,8 @@ settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev'
                            'mean fix omhulsel maken breakdown': Mean_fix_omhulselmaken_breakdown,
                            'capacity staal buigen': capacity_staalbuigen,
                            'capacity staal koppelen': capacity_staalkoppelen,
-                           'capacity omhulsel maken': capacity_omhulselmaken
+                           'capacity omhulsel maken': capacity_omhulselmaken,
+                           'stddev order hoeveelheid als percentage van quantity': stdev_order_quantity_percentage_of_quantity
                            }
 fig_table_speelveld = go.Figure(data=[go.Table(
     header=dict(values=['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev'],
@@ -139,6 +142,13 @@ fig_table_speelveld = go.Figure(data=[go.Table(
 
 finished_orders_df, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
 
+sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+fig_some_order = plottingfunctions.plot_gantt_disruptions_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
+
+longestprocesstimesdf = sortfinisheddf.head(int(0.05 * len(sortfinisheddf)))
+fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(longestprocesstimesdf)
+
+
 fig_VSM_statistics = go.Figure(data=[go.Table(
     header=dict(values=['process step',"inv staal buigen", 'staal buigen', 'inv staal koppelen', 'staal koppelen',
                         'inv omhulsel maken', 'omhulsel maken', 'total queue time', 'total process time'],
@@ -172,12 +182,11 @@ app.layout = html.Div([
                         value = 1, style = {'width':'100%'}),
             html.Div(id = 'output_container', children = []),
             html.Br(),
-            #dcc.Graph(id = 'total thoughouttime', figure = fig_total_thoughout_time),
-            #dcc.Graph(id = 'total queue time', figure = fig_total_queue_time),
-            #dcc.Graph(id = 'queue time staal buigen', figure = fig_queue_time_staal_buigen),
             #dcc.Graph(id = 'queue time staal koppelen', figure = fig_queue_time_staal_koppelen),
             dcc.Graph(id = 'process measure', figure ={}),
-            dcc.Graph(id = 'disruption_periods',figure =  fig_gantt_disruptions),
+            dcc.Graph(id = 'Gantt_all_disruptions', figure = fig_gantt_disruptions),
+            dcc.Graph(id = 'Pie reason queue', figure = fig_pie_chart_reasons_queue),
+            dcc.Graph(id = 'specific order disruptions', figure = fig_some_order),
 
 
 
