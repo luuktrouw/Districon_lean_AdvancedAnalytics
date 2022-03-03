@@ -171,8 +171,11 @@ def plot_fractions_wait_time_reasons(finishedordersdf):
 
 def Make_kpi_figures(finished_orders_df):
 
-    fig_total_thoughout_time = px.histogram(finished_orders_df, x = 'total process time')
+    fig_total_thoughout_time = px.histogram(finished_orders_df,x = 'total process time')
     #fig_total_thoughout_time.show()
+
+    #orted_finished_orders_df = finished_orders_df.sort_values('total process time', ascending=False)
+    #fig_total_thoughout_time = px.bar(sorted_finished_orders_df,x = 'index', y = 'total process time', hover_name= 'orderID')
 
     fig_queue_time_staal_buigen = px.histogram(finished_orders_df, x='tijd inventory staal buigen')
     #fig_queue_time_staal_buigen.show()

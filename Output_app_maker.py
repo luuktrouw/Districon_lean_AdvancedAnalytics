@@ -57,6 +57,12 @@ Mean_fix_staalbuigen_breakdown = 480
 Mean_fix_staalkoppelen_breakdown = 480
 Mean_fix_omhulselmaken_breakdown = 480
 
+# safety stocks sub assemblies
+SS_gekoppeld_eenpersoons =  5
+SS_gekoppeld_twijfelaar =  5
+SS_gekoppeld_queensize =  5
+SS_gekoppeld_kingsize =  5
+
 settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev': stdev_ordertime,
                            'order size mean': Mean_ordersize, 'order size stdev': stdev_ordersize,
                            'supply interval order': supply_order_interval_time,
@@ -80,7 +86,11 @@ settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev'
                            'capacity staal buigen': capacity_staalbuigen,
                            'capacity staal koppelen': capacity_staalkoppelen,
                            'capacity omhulsel maken': capacity_omhulselmaken,
-                           'stddev order hoeveelheid als percentage van quantity': stdev_order_quantity_percentage_of_quantity
+                           'stddev order hoeveelheid als percentage van quantity': stdev_order_quantity_percentage_of_quantity,
+                           'SS gekoppeld eenpersoons': SS_gekoppeld_eenpersoons,
+                           'SS gekoppeld twijfelaar': SS_gekoppeld_twijfelaar,
+                           'SS gekoppeld queensize': SS_gekoppeld_queensize,
+                           'SS gekoppeld kingsize': SS_gekoppeld_kingsize,
                            }
 fig_table_speelveld = go.Figure(data=[go.Table(
     header=dict(values=['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev'],

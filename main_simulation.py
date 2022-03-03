@@ -18,6 +18,7 @@ import statistics
 import pandas as pd
 import plottingfunctions
 import Functions
+import Functions_get_info
 
 
 
@@ -39,7 +40,12 @@ def runsimulation(settingdistibution_dict):
             initdict3 = {}
             self.work_state= [[0,0], [0,0], [0,0]]
             self.materialstate = [{'stalen stangen': 250},{'koppeldraad': 250},{'soft stuffing': 250, 'medium stuffing': 250,'hard stuffing': 250}]
-            self.buffers = []
+            self.stockstate_subassemblies = [{},{'gebogen stangen':settingdistibution_dict['SS gebogen stangen']},
+                                                {'gekoppeld eenpersoons': settingdistibution_dict['SS gekoppeld eenpersoons'],
+                                                 'gekoppeld twijfelaar': settingdistibution_dict['SS gekoppeld twijfelaar'],
+                                                 'gekoppeld queensize': settingdistibution_dict['SS gekoppeld queensize'],
+                                                 'gekoppeld kingsize': settingdistibution_dict['SS gekoppeld kingsize'],
+                                                 }]
             self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
             self.supplyorders_koppeldraad_inprocess = [[math.inf,0]]
             self.supplyorders_stuffing_inprocess = [[math.inf,{'soft stuffing': 0, 'medium stuffing': 0, 'hard stuffing': 0}]]
@@ -48,7 +54,7 @@ def runsimulation(settingdistibution_dict):
             self.orders_inprocess0 = [[math.inf,0,initdict1]] #first list is the finish times, second the order sizes
             self.orders_inprocess1 = [[math.inf,0,initdict2]]
             self.orders_inprocess2 = [[math.inf,0,initdict3]]
-            self.nexteventtimes = {'new order': Functions4simulation.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev']),
+            self.nexteventtimes = {'new order': Functions_get_info.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev']),
                                    "staal buigen klaar" : self.orders_inprocess0[0][0],
                                    "staal koppelen klaar": self.orders_inprocess1[0][0],
                                    "omhulsel klaar": self.orders_inprocess2[0][0],
@@ -58,9 +64,9 @@ def runsimulation(settingdistibution_dict):
                                    'order new stalen stangen': settingdistibution_dict['supply interval order'],
                                    'order new koppeldraad': settingdistibution_dict['supply interval order'],
                                    'order new stuffing': settingdistibution_dict['supply interval order'],
-                                   'staal buigen breakdown': Functions4simulation.get_length_next_staalbuigen_breakdown(settingdistibution_dict['mean staal buigen breakdown']),
-                                   'staal koppelen breakdown': Functions4simulation.get_length_next_staalkoppelen_breakdown(settingdistibution_dict['mean staal koppelen breakdown']),
-                                   'omhulsel maken breakdown': Functions4simulation.get_length_next_omhulselmaken_breakdown(settingdistibution_dict['mean omhulsel maken breakdown']),
+                                   'staal buigen breakdown': Functions_get_info.get_length_next_staalbuigen_breakdown(settingdistibution_dict['mean staal buigen breakdown']),
+                                   'staal koppelen breakdown': Functions_get_info.get_length_next_staalkoppelen_breakdown(settingdistibution_dict['mean staal koppelen breakdown']),
+                                   'omhulsel maken breakdown': Functions_get_info.get_length_next_omhulselmaken_breakdown(settingdistibution_dict['mean omhulsel maken breakdown']),
                                    'fix staal buigen breakdown': math.inf,
                                    'fix staal koppelen breakdown': math.inf,
                                    'fix omhulsel maken breakdown': math.inf}
@@ -86,7 +92,7 @@ def runsimulation(settingdistibution_dict):
         curtimeinterval = 4800000
         timeinterval = 4800000
 
-        while instance.tijd <= 4800500:
+        while instance.tijd <= 48005000:
             previoustime = instance.tijd
             if instance.tijd > curtimeinterval:
                 print('current time in simulation is: ', curtimeinterval)
