@@ -92,7 +92,7 @@ def runsimulation(settingdistibution_dict):
         curtimeinterval = 4800000
         timeinterval = 4800000
 
-        while instance.tijd <= 48005000:
+        while instance.tijd <= 4800000:
             previoustime = instance.tijd
             if instance.tijd > curtimeinterval:
                 print('current time in simulation is: ', curtimeinterval)

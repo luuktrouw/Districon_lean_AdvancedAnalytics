@@ -99,49 +99,57 @@ def get_neworderinfo(Mean_ordersize, stdev_ordersize):
     sizethisorder = random.choice(sizetypes)
 
     billofmaterials = {}
-    billofmaterials['staal buigen'] = {}
-    billofmaterials['staal koppelen'] = {}
-    billofmaterials['omhulsel maken'] = {}
+    billofmaterials['staal buigen'] = {'raw material':{}, 'subassembly':{}}
+    billofmaterials['staal koppelen'] = {'raw material':{}, 'subassembly':{}}
+    billofmaterials['omhulsel maken'] = {'raw material':{}, 'subassembly':{}}
 
     if sizethisorder == 'eenpersoons':
-        billofmaterials['staal buigen']['stalen stangen'] = 8
-        billofmaterials['staal koppelen']['koppeldraad'] = 4
+        billofmaterials['staal buigen']['raw material']['stalen stangen'] = 8 *ordersize
+        billofmaterials['staal koppelen']['raw material']['koppeldraad'] = 4 *ordersize
+        billofmaterials['staal koppelen']['subassembly']['gebogen stangen'] = 8 *ordersize
+        billofmaterials['omhulsel maken']['subassembly']['gekoppeld eenpersoons'] = 1 * ordersize
         if softness == 'soft':
-            billofmaterials['omhulsel maken']['soft stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['soft stuffing'] = 1 *ordersize
         elif softness == 'medium':
-            billofmaterials['omhulsel maken']['medium stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['medium stuffing'] = 1 *ordersize
         elif softness == 'hard':
-            billofmaterials['omhulsel maken']['hard stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['hard stuffing'] = 1 *ordersize
 
     elif sizethisorder == 'twijfelaar':
-        billofmaterials['staal buigen']['stalen stangen'] = 10
-        billofmaterials['staal koppelen']['koppeldraad'] = 4
+        billofmaterials['staal buigen']['raw material']['stalen stangen'] = 10 *ordersize
+        billofmaterials['staal koppelen']['raw material']['koppeldraad'] = 4 *ordersize
+        billofmaterials['staal koppelen']['subassembly']['gebogen stangen'] = 10 *ordersize
+        billofmaterials['omhulsel maken']['subassembly']['gekoppeld twijfelaar'] = 1 * ordersize
         if softness == 'soft':
-            billofmaterials['omhulsel maken']['soft stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['soft stuffing'] = 1 *ordersize
         elif softness == 'medium':
-            billofmaterials['omhulsel maken']['medium stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['medium stuffing'] = 1 *ordersize
         elif softness == 'hard':
-            billofmaterials['omhulsel maken']['hard stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['hard stuffing'] = 1 *ordersize
 
     elif sizethisorder == 'queen size':
-        billofmaterials['staal buigen']['stalen stangen'] = 14
-        billofmaterials['staal koppelen']['koppeldraad'] = 6
+        billofmaterials['staal buigen']['raw material']['stalen stangen'] = 14 *ordersize
+        billofmaterials['staal koppelen']['raw material']['koppeldraad'] = 6 *ordersize
+        billofmaterials['staal koppelen']['subassembly']['gebogen stangen'] = 14 *ordersize
+        billofmaterials['omhulsel maken']['subassembly']['gekoppeld queensize'] = 1 * ordersize
         if softness == 'soft':
-            billofmaterials['omhulsel maken']['soft stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['soft stuffing'] = 1 *ordersize
         elif softness == 'medium':
-            billofmaterials['omhulsel maken']['medium stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['medium stuffing'] = 1 *ordersize
         elif softness == 'hard':
-            billofmaterials['omhulsel maken']['hard stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['hard stuffing'] = 1 *ordersize
 
     elif sizethisorder == 'king size':
-        billofmaterials['staal buigen']['stalen stangen'] = 16
-        billofmaterials['staal koppelen']['koppeldraad'] = 6
+        billofmaterials['staal buigen']['raw material']['stalen stangen'] = 16 *ordersize
+        billofmaterials['staal koppelen']['raw material']['koppeldraad'] = 6 *ordersize
+        billofmaterials['staal koppelen']['subassembly']['gebogen stangen'] = 16 *ordersize
+        billofmaterials['omhulsel maken']['subassembly']['gekoppeld kingsize'] = 1 * ordersize
         if softness == 'soft':
-            billofmaterials['omhulsel maken']['soft stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['soft stuffing'] = 1 *ordersize
         elif softness == 'medium':
-            billofmaterials['omhulsel maken']['medium stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['medium stuffing'] = 1 *ordersize
         elif softness == 'hard':
-            billofmaterials['omhulsel maken']['hard stuffing'] = 1
+            billofmaterials['omhulsel maken']['raw material']['hard stuffing'] = 1 *ordersize
 
     return orderID, ordersize, softness, sizethisorder, billofmaterials
 

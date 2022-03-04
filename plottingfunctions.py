@@ -91,10 +91,26 @@ def plot_gantt_disruptions(measures):
 
     return fig_all_disruptions_gantt
 
-def plot_gantt_disruptions_per_order(finishedordersdf, ordername):
+def plot_gantt_per_order(finishedordersdf, ordername):
     dict_disruption_periods = {'disruptions_names': [], 'disruptions_begins': [], 'disruptions_ends': []}
     orderdf = finishedordersdf.loc[finishedordersdf['orderID'] == ordername]
     orderdf = orderdf.iloc[0]
+
+    # include the measures for when the order was in each process step
+    #staal buigen
+    dict_disruption_periods['disruptions_names'].append('processing staal buigen')
+    dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['start tijd staal buigen']))
+    dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['eind tijd staal buigen']))
+
+    #staal koppelen
+    dict_disruption_periods['disruptions_names'].append('processing staal koppelen')
+    dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['start tijd staal koppelen']))
+    dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['eind tijd staal koppelen']))
+
+    #omhulsel maken
+    dict_disruption_periods['disruptions_names'].append('processing omhulsel maken')
+    dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['start tijd omhulsel maken']))
+    dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['eind tijd omhulsel maken']))
 
     # make the disruption periods dict for that order
     for i in range(len(orderdf['reason inventory staal buigen']['supply shortage'])):
@@ -109,8 +125,8 @@ def plot_gantt_disruptions_per_order(finishedordersdf, ordername):
 
     for i in range(len(orderdf['reason inventory staal koppelen']['supply shortage'])):
         dict_disruption_periods['disruptions_names'].append('supply shortages staal koppelen')
-        dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory staal buigen']['supply shortage'][i][0]))
-        dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory staal buigen']['supply shortage'][i][1]))
+        dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory staal koppelen']['supply shortage'][i][0]))
+        dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory staal koppelen']['supply shortage'][i][1]))
 
     for i in range(len(orderdf['reason inventory staal koppelen']['breakdown'])):
         dict_disruption_periods['disruptions_names'].append('breakdown staal koppelen')

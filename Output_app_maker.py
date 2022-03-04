@@ -28,17 +28,17 @@ supply_order_interval_time = 2400
 Mean_supplytime_stalen_stangen = 480
 stdev_supplytime_stalen_stangen = 20
 #eorderpoint_stalenstangen = 20
-reorder_upto_point_stalenstangen = 100
+reorder_upto_point_stalenstangen = 170
 
 Mean_supplytime_koppeldraad = 480
 stdev_supplytime_koppeldraad = 20
-reorder_upto_point_koppeldraad = 55
+reorder_upto_point_koppeldraad = 75
 
 Mean_supplytime_stuffing = 480
 stdev_supplytime_stuffing = 20
-reorder_upto_point_softstuffing = 5
-reorder_upto_point_mediumstuffing = 5
-reorder_upto_point_hardstuffing = 5
+reorder_upto_point_softstuffing = 10
+reorder_upto_point_mediumstuffing = 10
+reorder_upto_point_hardstuffing = 10
 
 stdev_order_quantity_percentage_of_quantity = 0.01
 # distributions processes
@@ -58,10 +58,11 @@ Mean_fix_staalkoppelen_breakdown = 480
 Mean_fix_omhulselmaken_breakdown = 480
 
 # safety stocks sub assemblies
-SS_gekoppeld_eenpersoons =  5
-SS_gekoppeld_twijfelaar =  5
-SS_gekoppeld_queensize =  5
-SS_gekoppeld_kingsize =  5
+SS_gebogen_stangen = 0
+SS_gekoppeld_eenpersoons = 0
+SS_gekoppeld_twijfelaar =  0
+SS_gekoppeld_queensize =  0
+SS_gekoppeld_kingsize = 0
 
 settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev': stdev_ordertime,
                            'order size mean': Mean_ordersize, 'order size stdev': stdev_ordersize,
@@ -87,6 +88,7 @@ settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev'
                            'capacity staal koppelen': capacity_staalkoppelen,
                            'capacity omhulsel maken': capacity_omhulselmaken,
                            'stddev order hoeveelheid als percentage van quantity': stdev_order_quantity_percentage_of_quantity,
+                           'SS gebogen stangen': SS_gebogen_stangen,
                            'SS gekoppeld eenpersoons': SS_gekoppeld_eenpersoons,
                            'SS gekoppeld twijfelaar': SS_gekoppeld_twijfelaar,
                            'SS gekoppeld queensize': SS_gekoppeld_queensize,
@@ -153,7 +155,7 @@ fig_table_speelveld = go.Figure(data=[go.Table(
 finished_orders_df, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
 
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
-fig_some_order = plottingfunctions.plot_gantt_disruptions_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
+fig_some_order = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
 
 longestprocesstimesdf = sortfinisheddf.head(int(0.05 * len(sortfinisheddf)))
 fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(longestprocesstimesdf)
