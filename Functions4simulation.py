@@ -18,12 +18,22 @@ def event_neworder(instance, settingdistibution_dict):
     instance.nexteventtimes['new order'] = instance.tijd + Functions_get_info.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev'])
 
     # input the new order in the inventory of the first process and try starting the process.
+    instance.inventories[2].append([math.inf, ordersize, orderdict])
+    orderdict['start tijd inventory omhulsel maken'] = instance.tijd
+    instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
+
+    instance.inventories[1].append([math.inf, ordersize, orderdict])
+    orderdict['start tijd inventory staal koppelen'] = instance.tijd
+    instance = Functions_start_process_steps.start_process_staal_koppelen( instance, settingdistibution_dict)
+
     instance.inventories[0].append([math.inf, ordersize, orderdict])
     orderdict['start tijd inventory staal buigen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
 
-    # updat next event time for staal buigen
+    # updat next event time for staal buigen and for the other processes
     instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
+    instance.nexteventtimes["staal koppelen klaar"] = instance.orders_inprocess1[0][0]
+    instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
 
     return instance
 
@@ -40,11 +50,14 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
 
-    # what goes out of the machine:
-    processed_order[0] = math.inf
-    processed_order[2]['start tijd inventory staal koppelen'] = instance.tijd
-    instance.inventories[1].append(processed_order)
+    # what goes out of the machine (might needed the subassembly to start)
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
+
+    # what goes out of the machine:
+    # processed_order[0] = math.inf
+    # processed_order[2]['start tijd inventory staal koppelen'] = instance.tijd
+    # instance.inventories[1].append(processed_order)
+    # instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
     instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
     instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
@@ -64,11 +77,14 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
-    # what goes out of the machine:
-    processed_order[0] = math.inf
-    processed_order[2]['start tijd inventory omhulsel maken'] = instance.tijd
-    instance.inventories[2].append(processed_order)
+    # what goes out of the machine (might needed the subassembly to start)
     instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
+
+    # what goes out of the machine:
+    # processed_order[0] = math.inf
+    # processed_order[2]['start tijd inventory omhulsel maken'] = instance.tijd
+    # instance.inventories[2].append(processed_order)
+    # instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
 
     instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
     instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]

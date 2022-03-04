@@ -58,11 +58,11 @@ Mean_fix_staalkoppelen_breakdown = 480
 Mean_fix_omhulselmaken_breakdown = 480
 
 # safety stocks sub assemblies
-SS_gebogen_stangen = 0
-SS_gekoppeld_eenpersoons = 0
-SS_gekoppeld_twijfelaar =  0
-SS_gekoppeld_queensize =  0
-SS_gekoppeld_kingsize = 0
+SS_gebogen_stangen = 75
+SS_gekoppeld_eenpersoons = 10
+SS_gekoppeld_twijfelaar =  10
+SS_gekoppeld_queensize =  10
+SS_gekoppeld_kingsize = 10
 
 settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev': stdev_ordertime,
                            'order size mean': Mean_ordersize, 'order size stdev': stdev_ordersize,
