@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import datetime
+import plotly.graph_objects as go
 
 
 
@@ -184,6 +185,77 @@ def plot_fractions_wait_time_reasons(finishedordersdf):
     fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
     #fig.show()
     return fig
+
+def plot_fraction_deadlines_met(finished_orders_df):
+    counter_orders_met = 0
+
+    for i in range(len(finished_orders_df)):
+        if finished_orders_df['finish time'][i] <= finished_orders_df['deadline order'][i]:
+            counter_orders_met += 1
+
+    fraction_orders_met = counter_orders_met/len(finished_orders_df)
+
+    fig_order_deadlines_met = go.Figure(data=[go.Table(
+        header=dict(values=['Percentage deadlines met'],
+                    line_color='darkslategray',
+                    fill_color='lightskyblue'),
+        cells=dict(values=[[fraction_orders_met]]), columnwidth= 30)
+    ])
+
+    return fig_order_deadlines_met
+
+def make_fig_speelveld(settingdistibution_dict):
+    fig_table_speelveld = go.Figure(data=[go.Table(
+        header=dict(values=['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev'],
+                    line_color='darkslategray',
+                    fill_color='lightskyblue',
+                    align='left'),
+        cells=dict(values=[['doorlooptijd staal buigen', 'doorlooptijd staal koppelen', 'doorlooptijd omhulsel maken',
+                            'aankomst nieuwe orders',
+                            'order grootte nieuwe orders', 'tijd tot nieuwe breakdown staal buigen',
+                            'tijd tot nieuwe breakdown staal koppelen',
+                            'tijd tot nieuwe breakdown omhulsel maken', 'tijd breakdown fixen staal buigen',
+                            'tijd breakdown fixen staal koppelen',
+                            'tijd breakdown fixen omhulsel maken', 'reorder per tijdunits', 'capacity staal buigen',
+                            'capacity staal koppelen', 'capacity omhulsel maken'],
+                           ['Exponential', 'Exponential', 'Normal', 'Exponential',
+                            'Normal', 'Exponential', 'Exponential',
+                            'Exponential', 'Exponential', 'Exponential',
+                            'Exponential', 'Deterministic', 'Deterministic',
+                            'Deterministic', 'Deterministic'],
+                           ['no', 'no', 'no', 'no',
+                            'no', 'no', 'no',
+                            'no', 'no', 'no',
+                            'no', 'no', 'no',
+                            'no', 'no'],
+                           [settingdistibution_dict['mean staal buigen time'],
+                            settingdistibution_dict['mean staal koppelen time'],
+                            settingdistibution_dict['mean omhulsel maken time'],
+                            settingdistibution_dict['order time mean'],
+                            settingdistibution_dict['order size mean'],
+                            settingdistibution_dict['mean staal buigen breakdown'],
+                            settingdistibution_dict['mean staal koppelen breakdown'],
+                            settingdistibution_dict['mean omhulsel maken breakdown'],
+                            settingdistibution_dict['mean fix staal buigen breakdown'],
+                            settingdistibution_dict['mean fix staal koppelen breakdown'],
+                            settingdistibution_dict['mean fix omhulsel maken breakdown'],
+                            settingdistibution_dict['supply interval order'],
+                            settingdistibution_dict['capacity staal buigen'],
+                            settingdistibution_dict['capacity staal koppelen'],
+                            settingdistibution_dict['capacity omhulsel maken']],
+                           ['Nan', 'Nan', settingdistibution_dict['stdev omhulsel maken time'], 'Nan',
+                            settingdistibution_dict['order size stdev'], 'Nan', 'Nan',
+                            'Nan', 'Nan', 'Nan',
+                            'Nan', 'Nan', 'Nan',
+                            'Nan', 'Nan']
+                           ],
+                   line_color='darkslategray',
+                   fill_color='lightcyan',
+                   align='left'))
+    ], layout_height=500)
+
+    return fig_table_speelveld
+
 
 def Make_kpi_figures(finished_orders_df):
 

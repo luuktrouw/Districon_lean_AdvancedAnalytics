@@ -8,7 +8,9 @@ def get_order_size(Mean_ordersize, stdev_ordersize):
     #print('size of next order: ', size)
     return size
 
-#def get_order_deadline(Mean_order_deadline, stdev_order_deadline):
+def get_order_deadline(Mean_order_deadline, stdev_order_deadline):
+    time = round(np.random.normal(Mean_order_deadline, stdev_order_deadline), 0)
+    return time
 
 def get_length_next_staalbuigen_breakdown(Mean_schakel_staalbuigen_breakdown):
     time = round(np.random.exponential(Mean_schakel_staalbuigen_breakdown), 0)

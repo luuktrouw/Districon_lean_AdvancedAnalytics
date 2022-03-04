@@ -9,7 +9,9 @@ def event_neworder(instance, settingdistibution_dict):
 
     orderID, ordersize, softness, sizethisorder, billofmaterials = Functions_get_info.get_neworderinfo(settingdistibution_dict['order size mean'], settingdistibution_dict['order size stdev'])
 
-    orderdict = {'orderID': orderID, 'softnesstype': softness, 'bedsize': sizethisorder, 'bill of materials': billofmaterials, 'time received': instance.tijd,
+    orderdict = {'orderID': orderID,'time received': instance.tijd,
+                 'deadline order': instance.tijd + Functions_get_info.get_order_deadline(settingdistibution_dict['mean deadline order'],settingdistibution_dict['stdev deadline order']),
+                 'softnesstype': softness, 'bedsize': sizethisorder, 'bill of materials': billofmaterials,
                  'reason inventory staal buigen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
                  'reason inventory staal koppelen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
                  'reason inventory omhulsel maken':{'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]}}
