@@ -46,6 +46,13 @@ def runsimulation(settingdistibution_dict):
                                                  'gekoppeld queensize': settingdistibution_dict['SS gekoppeld queensize'],
                                                  'gekoppeld kingsize': settingdistibution_dict['SS gekoppeld kingsize'],
                                                  }]
+            self.priority_materialstate = [{'stalen stangen': 100}, {'koppeldraad': 100}, {'soft stuffing': 100, 'medium stuffing': 100, 'hard stuffing': 100}]
+            self.priority_stockstate_subassemblies = [{}, {'gebogen stangen': settingdistibution_dict['SS gebogen stangen']},
+                                             {'gekoppeld eenpersoons': settingdistibution_dict['SS gekoppeld eenpersoons'],
+                                              'gekoppeld twijfelaar': settingdistibution_dict['SS gekoppeld twijfelaar'],
+                                              'gekoppeld queensize': settingdistibution_dict['SS gekoppeld queensize'],
+                                              'gekoppeld kingsize': settingdistibution_dict['SS gekoppeld kingsize'],
+                                              }]
             self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
             self.supplyorders_koppeldraad_inprocess = [[math.inf,0]]
             self.supplyorders_stuffing_inprocess = [[math.inf,{'soft stuffing': 0, 'medium stuffing': 0, 'hard stuffing': 0}]]
@@ -76,12 +83,23 @@ def runsimulation(settingdistibution_dict):
                                                 {i: 0 for i in range(self.capacities[1] + 1)},
                                                 {i: 0 for i in range(self.capacities[2] + 1)}],
                              'breakdown periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]},
-                             'supply shortage periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]}
-                             }
+                             'supply shortage periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]},
+                             'stock levels': {'raw materials': {'stalen stangen': [[self.materialstate[0]['stalen stangen'],self.tijd]],
+                                                                'koppeldraad': [[self.materialstate[1]['koppeldraad'],self.tijd]],
+                                                                'soft stuffing': [[self.materialstate[2]['soft stuffing'],self.tijd]],
+                                                                'medium stuffing': [[self.materialstate[2]['medium stuffing'],self.tijd]],
+                                                                'hard stuffing':[[self.materialstate[2]['hard stuffing'],self.tijd]]},
+                                               'subassemblies': {'gebogen stangen': [[self.stockstate_subassemblies[1]['gebogen stangen'],self.tijd]],
+                                                                'gekoppeld eenpersoons': [[self.stockstate_subassemblies[2]['gekoppeld eenpersoons'],self.tijd]],
+                                                                'gekoppeld twijfelaar':[[self.stockstate_subassemblies[2]['gekoppeld twijfelaar'],self.tijd]],
+                                                                'gekoppeld queensize':[[self.stockstate_subassemblies[2]['gekoppeld queensize'],self.tijd]],
+                                                                'gekoppeld kingsize':[[self.stockstate_subassemblies[2]['gekoppeld kingsize'],self.tijd]],
+                                                                }
+                                              }
+                            }
             self.finishedorders = [] # list consisting of dictionaries of orders
 
             # measures
-
 
     for loopcounter in range(numberloops):
         print('current loop number: ', loopcounter)
@@ -143,7 +161,7 @@ def runsimulation(settingdistibution_dict):
     fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
 
 
-    return finished_orders_df, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
+    return finished_orders_df, instance.measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
 
 
 #fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")

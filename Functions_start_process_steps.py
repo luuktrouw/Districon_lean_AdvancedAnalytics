@@ -9,6 +9,7 @@ def start_process_staal_buigen(instance, settingdistibution_dict):
 
         for i in newprocessing_order[2]['bill of materials']['staal buigen']['raw material'].keys():
             instance.materialstate[0][i] -= newprocessing_order[2]['bill of materials']['staal buigen']['raw material'][i]
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[0][i], instance.tijd])
 
         '''
         # if materials to low, order up to a certain level.
@@ -61,9 +62,11 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
 
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'].keys():
             instance.materialstate[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'][i]
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[1][i], instance.tijd])
 
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'].keys():
             instance.stockstate_subassemblies[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
+            instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
 
         finish_time_this_order =  instance.tijd + Functions_get_info.get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'])
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
@@ -108,9 +111,11 @@ def start_process_omhulsel_maken(instance, settingdistibution_dict):
 
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'].keys():
             instance.materialstate[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'][i]
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[2][i], instance.tijd])
 
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'].keys():
             instance.stockstate_subassemblies[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'][i]
+            instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
 
         finish_time_this_order =  instance.tijd + Functions_get_info.get_length_omhulsel_plaatsen(settingdistibution_dict['mean omhulsel maken time'],settingdistibution_dict['stdev omhulsel maken time'] )
         finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])

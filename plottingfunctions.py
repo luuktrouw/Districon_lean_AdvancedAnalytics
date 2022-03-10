@@ -156,29 +156,30 @@ def plot_gantt_per_order(finishedordersdf, ordername):
 
     return fig_disruptions_order_gantt
 
-def plot_fractions_wait_time_reasons(finishedordersdf):
+def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
+    longestprocesstimesdf = sortfinisheddf.head(int(percentage/100 * len(sortfinisheddf)))
 
     # neemt totaal van alle processen, dus niet specifiek voor staal buigen bijvoorbeeld
     sum_other_wait_time = 0
     sum_wait_time_shortage_supply = 0
     sum_wait_time_breakdowns = 0
-    for i in range(len(finishedordersdf)):
-        sum_other_wait_time += finishedordersdf.iloc[i]['total queue time']
+    for i in range(len(longestprocesstimesdf)):
+        sum_other_wait_time += longestprocesstimesdf.iloc[i]['total queue time']
 
         # loop over alle process stappen & dan disruptions erin
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'])):
-            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][0]
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'])):
-            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'])):
-            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - finishedordersdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'])):
+            sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'])):
+            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'])):
+            sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
 
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'])):
-            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][0]
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'])):
-            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][0]
-        for j in range(len(finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'])):
-            sum_wait_time_breakdowns += finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][1] - finishedordersdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'])):
+            sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'])):
+            sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][0]
+        for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'])):
+            sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][0]
 
     sum_other_wait_time -= sum_wait_time_shortage_supply + sum_wait_time_breakdowns
 
@@ -189,14 +190,14 @@ def plot_fractions_wait_time_reasons(finishedordersdf):
 def plot_fraction_deadlines_met(finished_orders_df):
     counter_orders_met = 0
 
-    for i in range(len(finished_orders_df)):
+    for i in finished_orders_df.index:
         if finished_orders_df['finish time'][i] <= finished_orders_df['deadline order'][i]:
             counter_orders_met += 1
 
     fraction_orders_met = counter_orders_met/len(finished_orders_df)
 
     fig_order_deadlines_met = go.Figure(data=[go.Table(
-        header=dict(values=['Percentage deadlines met'],
+        header=dict(values=['Percentage Deadlines Made'],
                     line_color='darkslategray',
                     fill_color='lightskyblue'),
         cells=dict(values=[[fraction_orders_met]]), columnwidth= 30)
@@ -204,58 +205,101 @@ def plot_fraction_deadlines_met(finished_orders_df):
 
     return fig_order_deadlines_met
 
+def plot_stocklevels_through_time(timeseriesstocklevel):
+    xas = [timeseriesstocklevel[i][1] for i in range(len(timeseriesstocklevel))]
+    yas = [timeseriesstocklevel[i][0] for i in range(len(timeseriesstocklevel))]
+    dfforgraph = pd.DataFrame(dict(x = xas,y=yas))
+    fig = px.line(dfforgraph, x="x", y="y", title="timeseries stock levels")
+
+    return fig
+
 def make_fig_speelveld(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['doorlooptijd staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen time'], 'Nan'],
+                        ['doorlooptijd staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen time'], 'Nan'],
+                        ['doorlooptijd omhulsel maken', 'Normal', 'no', settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time']],
+                        ['aankomst nieuwe orders', 'Exponential', 'no', settingdistibution_dict['order time mean'], 'Nan'],
+                        ['order grootte nieuwe orders', 'Normal', 'no',settingdistibution_dict['order size mean'],settingdistibution_dict['order size stdev'] ],
+                        ['tijd tot nieuwe breakdown staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown omhulsel maken', 'Exponential', 'no', settingdistibution_dict['mean omhulsel maken breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal buigen', 'Exponential', 'no', settingdistibution_dict['mean fix staal buigen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean fix staal koppelen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen omhulsel maken', 'Exponential', 'no',settingdistibution_dict['mean fix omhulsel maken breakdown'] , 'Nan'],
+                        [ 'reorder per tijdunits', 'Deterministic', 'no',settingdistibution_dict['supply interval order'] , 'Nan'],
+                        ['reorder up to point stalen stangen', 'Deterministic', 'no',settingdistibution_dict['reorder upto stalen stangen'], 'Nan'],
+                        ['reorder up to point koppeldraad', 'Deterministic', 'no',settingdistibution_dict['reorder upto koppeldraad'], 'Nan'],
+                        ['reorder up to point soft stuffing', 'Deterministic', 'no',settingdistibution_dict['reorder upto soft stuffing'], 'Nan'],
+                        ['reorder up to point medium stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto medium stuffing'], 'Nan'],
+                        ['reorder up to point hard stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto hard stuffing'], 'Nan'],
+                        ['capacity staal buigen', 'Deterministic', 'no',settingdistibution_dict['capacity staal buigen'], 'Nan' ],
+                        ['capacity staal koppelen', 'Deterministic', 'no', settingdistibution_dict['capacity staal koppelen'], 'Nan'],
+                        ['capacity omhulsel maken', 'Deterministic', 'no', settingdistibution_dict['capacity omhulsel maken'], 'Nan'],
+                        ['Component Safety Stock gebogen stangen', 'Deterministic', 'no',settingdistibution_dict['SS gebogen stangen'], 'Nan'],
+                        ['Component Safety Stock gekoppeld eenpersoons', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld eenpersoons'], 'Nan'],
+                        ['Component Safety Stock gekoppeld twijfelaar', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld twijfelaar'], 'Nan'],
+                        ['Component Safety Stock gekoppeld queensize', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld queensize'], 'Nan'],
+                        ['Component Safety Stock gekoppeld kingsize', 'Deterministic', 'no',settingdistibution_dict[ 'SS gekoppeld kingsize'], 'Nan'],
+                        ['supply time stalen stangen', 'normal', 'no',settingdistibution_dict['mean supply time stalen stangen'],settingdistibution_dict['stdev supply time stalen stangen'] ],
+                        ['supply time koppeldraad', 'normal', 'no',settingdistibution_dict['mean supply time koppeldraad'],settingdistibution_dict['stdev supply time koppeldraad']],
+                        ['supply time stuffing', 'normal', 'no',settingdistibution_dict['mean supply time stuffing'],settingdistibution_dict['stdev supply time stuffing']],
+                        ['supply quantity error (%stdev)', 'normal', 'no','Same as ordered quantity',settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']],
+                        ['new order deadlines', 'normal', 'no',settingdistibution_dict['mean deadline order'],settingdistibution_dict[ 'stdev deadline order' ] ],
+                        ]
     fig_table_speelveld = go.Figure(data=[go.Table(
-        header=dict(values=['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev'],
+        header=dict(values=headercontent,
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='left'),
-        cells=dict(values=[['doorlooptijd staal buigen', 'doorlooptijd staal koppelen', 'doorlooptijd omhulsel maken',
-                            'aankomst nieuwe orders',
-                            'order grootte nieuwe orders', 'tijd tot nieuwe breakdown staal buigen',
-                            'tijd tot nieuwe breakdown staal koppelen',
-                            'tijd tot nieuwe breakdown omhulsel maken', 'tijd breakdown fixen staal buigen',
-                            'tijd breakdown fixen staal koppelen',
-                            'tijd breakdown fixen omhulsel maken', 'reorder per tijdunits', 'capacity staal buigen',
-                            'capacity staal koppelen', 'capacity omhulsel maken'],
-                           ['Exponential', 'Exponential', 'Normal', 'Exponential',
-                            'Normal', 'Exponential', 'Exponential',
-                            'Exponential', 'Exponential', 'Exponential',
-                            'Exponential', 'Deterministic', 'Deterministic',
-                            'Deterministic', 'Deterministic'],
-                           ['no', 'no', 'no', 'no',
-                            'no', 'no', 'no',
-                            'no', 'no', 'no',
-                            'no', 'no', 'no',
-                            'no', 'no'],
-                           [settingdistibution_dict['mean staal buigen time'],
-                            settingdistibution_dict['mean staal koppelen time'],
-                            settingdistibution_dict['mean omhulsel maken time'],
-                            settingdistibution_dict['order time mean'],
-                            settingdistibution_dict['order size mean'],
-                            settingdistibution_dict['mean staal buigen breakdown'],
-                            settingdistibution_dict['mean staal koppelen breakdown'],
-                            settingdistibution_dict['mean omhulsel maken breakdown'],
-                            settingdistibution_dict['mean fix staal buigen breakdown'],
-                            settingdistibution_dict['mean fix staal koppelen breakdown'],
-                            settingdistibution_dict['mean fix omhulsel maken breakdown'],
-                            settingdistibution_dict['supply interval order'],
-                            settingdistibution_dict['capacity staal buigen'],
-                            settingdistibution_dict['capacity staal koppelen'],
-                            settingdistibution_dict['capacity omhulsel maken']],
-                           ['Nan', 'Nan', settingdistibution_dict['stdev omhulsel maken time'], 'Nan',
-                            settingdistibution_dict['order size stdev'], 'Nan', 'Nan',
-                            'Nan', 'Nan', 'Nan',
-                            'Nan', 'Nan', 'Nan',
-                            'Nan', 'Nan']
+        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
+                   line_color='darkslategray',
+                   fill_color='lightcyan',
+                   align='left'))
+    ],
+                                    #layout_height=500
+                                     )
+
+    return fig_table_speelveld
+
+def make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles):
+    fig_VSM_statistics = go.Figure(data=[go.Table(
+        header=dict(values=['process step', "inv staal buigen", 'staal buigen', 'inv staal koppelen', 'staal koppelen',
+                            'inv omhulsel maken', 'omhulsel maken', 'total queue time', 'total process time'],
+                    line_color='darkslategray',
+                    fill_color='lightskyblue',
+                    align='left'),
+        cells=dict(values=[['mean', 'lower 0.05 quantile - upper 95 quantile'],
+                           [round(means['queue staal buigen'], 1),
+                            str(round(lower_5_quantiles['queue staal buigen'], 1)) + '-' + str(
+                                round(upper_95_quantiles['queue staal buigen'], 1))],
+                           [round(means['staal buigen'], 1),
+                            str(round(lower_5_quantiles['staal buigen'], 1)) + '-' + str(
+                                round(upper_95_quantiles['staal buigen'], 1))],
+                           [round(means['queue staal koppelen'], 1),
+                            str(round(lower_5_quantiles['queue staal koppelen'], 1)) + '-' + str(
+                                round(upper_95_quantiles['queue staal koppelen'], 1))],
+                           [round(means['staal koppelen'], 1),
+                            str(round(lower_5_quantiles['staal koppelen'], 1)) + '-' + str(
+                                round(upper_95_quantiles['staal koppelen'], 1))],
+                           [round(means['queue omhulsel maken'], 1),
+                            str(round(lower_5_quantiles['queue omhulsel maken'], 1)) + '-' + str(
+                                round(upper_95_quantiles['queue omhulsel maken'], 1))],
+                           [round(means['omhulsel maken'], 1),
+                            str(round(lower_5_quantiles['omhulsel maken'], 1)) + '-' + str(
+                                round(upper_95_quantiles['omhulsel maken'], 1))],
+                           [round(means['total queue time'], 1),
+                            str(round(lower_5_quantiles['total queue time'], 1)) + '-' + str(
+                                round(upper_95_quantiles['total queue time'], 1))],
+                           [round(means['total process time'], 1),
+                            str(round(lower_5_quantiles['total process time'], 1)) + '-' + str(
+                                round(upper_95_quantiles['total process time'], 1))]
                            ],
                    line_color='darkslategray',
                    fill_color='lightcyan',
                    align='left'))
-    ], layout_height=500)
-
-    return fig_table_speelveld
-
+    ])
+    return fig_VSM_statistics
 
 def Make_kpi_figures(finished_orders_df):
 

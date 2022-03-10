@@ -7,11 +7,12 @@ import Functions_start_process_steps
 
 def event_neworder(instance, settingdistibution_dict):
 
-    orderID, ordersize, softness, sizethisorder, billofmaterials = Functions_get_info.get_neworderinfo(settingdistibution_dict['order size mean'], settingdistibution_dict['order size stdev'])
+    orderID, ordersize, softness, sizethisorder, billofmaterials, highpriority = Functions_get_info.get_neworderinfo(settingdistibution_dict['order size mean'], settingdistibution_dict['order size stdev'], settingdistibution_dict['high priority chance'])
 
     orderdict = {'orderID': orderID,'time received': instance.tijd,
                  'deadline order': instance.tijd + Functions_get_info.get_order_deadline(settingdistibution_dict['mean deadline order'],settingdistibution_dict['stdev deadline order']),
-                 'softnesstype': softness, 'bedsize': sizethisorder, 'bill of materials': billofmaterials,
+                 'softnesstype': softness, 'bedsize': sizethisorder, 'high priority': highpriority,
+                 'bill of materials': billofmaterials,
                  'reason inventory staal buigen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
                  'reason inventory staal koppelen': {'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]},
                  'reason inventory omhulsel maken':{'supply shortage':[], 'breakdown':[], 'waiting on other orders':[]}}
@@ -20,15 +21,35 @@ def event_neworder(instance, settingdistibution_dict):
     instance.nexteventtimes['new order'] = instance.tijd + Functions_get_info.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev'])
 
     # input the new order in the inventory of the first process and try starting the process.
-    instance.inventories[2].append([math.inf, ordersize, orderdict])
+    # if high priority, sluit m aan achterin de rij, anders doe je m achteraan degene met high priorities
+    if orderdict['high priority'] == False or len(instance.inventories[2]) == 0:
+        instance.inventories[2].append([math.inf, ordersize, orderdict])
+    else:
+        for i in range(len(instance.inventories[2])):
+            if instance.inventories[2][i][2]['high priority'] == False:
+                instance.inventories[2].insert(i, [math.inf, ordersize, orderdict])
+                break
+
     orderdict['start tijd inventory omhulsel maken'] = instance.tijd
     instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
 
-    instance.inventories[1].append([math.inf, ordersize, orderdict])
+    if orderdict['high priority'] == False or len(instance.inventories[1]) == 0:
+        instance.inventories[1].append([math.inf, ordersize, orderdict])
+    else:
+        for i in range(len(instance.inventories[1])):
+            if instance.inventories[1][i][2]['high priority'] == False:
+                instance.inventories[1].insert(i, [math.inf, ordersize, orderdict])
+                break
     orderdict['start tijd inventory staal koppelen'] = instance.tijd
-    instance = Functions_start_process_steps.start_process_staal_koppelen( instance, settingdistibution_dict)
+    instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
-    instance.inventories[0].append([math.inf, ordersize, orderdict])
+    if orderdict['high priority'] == False or len(instance.inventories[0]) == 0:
+        instance.inventories[0].append([math.inf, ordersize, orderdict])
+    else:
+        for i in range(len(instance.inventories[0])):
+            if instance.inventories[0][i][2]['high priority'] == False:
+                instance.inventories[0].insert(i, [math.inf, ordersize, orderdict])
+                break
     orderdict['start tijd inventory staal buigen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
 
@@ -48,6 +69,7 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
     #update subassembly stock
     for i in processed_order[2]['bill of materials']['staal koppelen']['subassembly'].keys():
         instance.stockstate_subassemblies[1][i] += processed_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
+        instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
 
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
@@ -75,6 +97,7 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     #update subassembly stock
     for i in processed_order[2]['bill of materials']['omhulsel maken']['subassembly'].keys():
         instance.stockstate_subassemblies[2][i] += processed_order[2]['bill of materials']['omhulsel maken']['subassembly'][i]
+        instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
 
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
@@ -140,6 +163,7 @@ def event_order_new_stuffing(instance, settingdistibution_dict):
 def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
 
     instance.materialstate[0]['stalen stangen'] += instance.supplyorders_stalenstangen_inprocess[0][1]
+    instance.measures['stock levels']['raw materials']['stalen stangen'].append([instance.materialstate[0]['stalen stangen'], instance.tijd])
     instance.supplyorders_stalenstangen_inprocess.pop(0)
     instance.nexteventtimes['supply stalen stangen'] = instance.supplyorders_stalenstangen_inprocess[0][0]
 
@@ -163,6 +187,7 @@ def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
 def event_supplyorder_koppeldraad(instance, settingdistibution_dict):
 
     instance.materialstate[1]['koppeldraad'] += instance.supplyorders_koppeldraad_inprocess[0][1]
+    instance.measures['stock levels']['raw materials']['koppeldraad'].append([instance.materialstate[1]['koppeldraad'], instance.tijd])
     instance.supplyorders_koppeldraad_inprocess.pop(0)
     instance.nexteventtimes['supply koppeldraad'] = instance.supplyorders_koppeldraad_inprocess[0][0]
 
@@ -188,6 +213,9 @@ def event_supplyorder_stuffing(instance, settingdistibution_dict):
     instance.materialstate[2]['soft stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['soft stuffing']
     instance.materialstate[2]['medium stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['medium stuffing']
     instance.materialstate[2]['hard stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['hard stuffing']
+    instance.measures['stock levels']['raw materials']['soft stuffing'].append([instance.materialstate[2]['soft stuffing'], instance.tijd])
+    instance.measures['stock levels']['raw materials']['medium stuffing'].append([instance.materialstate[2]['medium stuffing'], instance.tijd])
+    instance.measures['stock levels']['raw materials']['hard stuffing'].append([instance.materialstate[2]['hard stuffing'], instance.tijd])
     instance.supplyorders_stuffing_inprocess.pop(0)
     instance.nexteventtimes['supply stuffing'] = instance.supplyorders_stuffing_inprocess[0][0]
 

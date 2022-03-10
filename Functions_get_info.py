@@ -82,7 +82,7 @@ def get_length_omhulsel_plaatsen(Mean_process2time, stdev_process2time):
     #print('new time schakel 2: ', tijd)
     return tijd
 
-def get_neworderinfo(Mean_ordersize, stdev_ordersize):
+def get_neworderinfo(Mean_ordersize, stdev_ordersize, highprioritychance):
     ordersize = get_order_size(Mean_ordersize, stdev_ordersize)
     if ordersize <= 0:
         ordersize = 1
@@ -93,6 +93,11 @@ def get_neworderinfo(Mean_ordersize, stdev_ordersize):
     sign3 = random.choice(letters)
     sign4 = random.choice(letters)
     orderID = 'Order-' + sign1 + sign2 + sign3 + sign4
+
+    priorityrandom = random.random()
+    if priorityrandom <= highprioritychance:
+        highpriority = True
+    else: highpriority = False
 
     softnesstypes = ['hard', 'medium', 'soft']
     softness = random.choice(softnesstypes)
@@ -153,6 +158,6 @@ def get_neworderinfo(Mean_ordersize, stdev_ordersize):
         elif softness == 'hard':
             billofmaterials['omhulsel maken']['raw material']['hard stuffing'] = 1 *ordersize
 
-    return orderID, ordersize, softness, sizethisorder, billofmaterials
+    return orderID, ordersize, softness, sizethisorder, billofmaterials ,highpriority
 
 
