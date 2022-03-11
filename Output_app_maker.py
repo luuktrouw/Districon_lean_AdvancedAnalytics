@@ -1,8 +1,8 @@
 import dash
 import pandas as pd
 import plotly.express as px
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 import main_simulation
@@ -28,7 +28,7 @@ Mean_order_deadline = 750
 stdev_order_deadline = 30
 
 # high priority chance
-high_priority_chance = 0.02
+high_priority_chance = 0.001
 
 # supply (manual stock level determined)
 supply_order_interval_time = 24000
@@ -118,14 +118,14 @@ finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
 fig_some_order = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
 
-# fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(longestprocesstimesdf)
+fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(finished_orders_df, 20)
 
 fig_order_deadlines_met = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df)
 
 testt = finished_orders_df[finished_orders_df['high priority'] == True]
-orderdeadlinesmet_priority = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df[finished_orders_df['high priority'] == True])
-fig_order_deadlines_met.show()
-orderdeadlinesmet_priority.show()
+if len(testt)>0:
+    figorderdeadlinesmet_priority = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df[finished_orders_df['high priority'] == True])
+
 
 fig_stocklevels = plottingfunctions.plot_stocklevels_through_time(measures['stock levels']['raw materials']['stalen stangen'])
 
@@ -140,6 +140,7 @@ app.layout = html.Div([
             #      value=1, style={'width': '100%'}),
             dcc.Graph(id = 'speelveld',figure =  fig_table_speelveld),
             dcc.Graph(id = 'orders met',figure =  fig_order_deadlines_met),
+            dcc.Graph(id='priority orders met', figure=figorderdeadlinesmet_priority),
             dcc.Graph(id = 'VSMstatistics',figure =  fig_VSM_statistics),
             dcc.Dropdown(id = 'select measure', options = [{'label': 'Total throughout time', 'value': 1},{'label': 'Total queueing time', 'value': 2},
                           {'label': 'Queueing time staal buigen', 'value': 3},{'label': 'Queueing time staal koppelen', 'value': 4},{'label': 'Queueing time omhulsel maken', 'value': 5}], multi = False,

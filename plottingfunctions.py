@@ -135,6 +135,8 @@ def plot_gantt_per_order(finishedordersdf, ordername):
         dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory staal koppelen']['breakdown'][i][1]))
 
     for i in range(len(orderdf['reason inventory omhulsel maken']['supply shortage'])):
+        if len(orderdf['reason inventory omhulsel maken']['supply shortage'][i]) == 1:
+            print('hoi')
         dict_disruption_periods['disruptions_names'].append('supply shortages omhulsel maken')
         dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory omhulsel maken']['supply shortage'][i][0]))
         dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(orderdf['reason inventory omhulsel maken']['supply shortage'][i][1]))
@@ -170,8 +172,11 @@ def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'])):
             sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'])):
-            sum_wait_time_shortage_supply += finishedordersdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
+            sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'])):
+            if len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j])
+                print('hoi')
             sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
 
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'])):

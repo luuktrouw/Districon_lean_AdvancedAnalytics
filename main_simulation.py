@@ -84,6 +84,7 @@ def runsimulation(settingdistibution_dict):
                                                 {i: 0 for i in range(self.capacities[2] + 1)}],
                              'breakdown periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]},
                              'supply shortage periods': {'staal buigen':[], 'staal koppelen': [], 'omhulsel maken':[]},
+                             'subassembly shortage periods': {'staal buigen': [], 'staal koppelen': [], 'omhulsel maken': []},
                              'stock levels': {'raw materials': {'stalen stangen': [[self.materialstate[0]['stalen stangen'],self.tijd]],
                                                                 'koppeldraad': [[self.materialstate[1]['koppeldraad'],self.tijd]],
                                                                 'soft stuffing': [[self.materialstate[2]['soft stuffing'],self.tijd]],

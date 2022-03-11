@@ -28,6 +28,10 @@ def event_neworder(instance, settingdistibution_dict):
         for i in range(len(instance.inventories[2])):
             if instance.inventories[2][i][2]['high priority'] == False:
                 instance.inventories[2].insert(i, [math.inf, ordersize, orderdict])
+                # if it is the first in queue, dan kan het zijn dat deze kan met supply, waardoor er dus geen supply  shortage is voor even
+                # dit zou resulteren in eventjes 0 seconde geen shortage supply voor die order, als je dat wil oplossen moet dat hier
+                #if i == 0:
+
                 break
 
     orderdict['start tijd inventory omhulsel maken'] = instance.tijd
@@ -39,6 +43,9 @@ def event_neworder(instance, settingdistibution_dict):
         for i in range(len(instance.inventories[1])):
             if instance.inventories[1][i][2]['high priority'] == False:
                 instance.inventories[1].insert(i, [math.inf, ordersize, orderdict])
+                # if it is the first in queue, dan kan het zijn dat deze kan met supply, waardoor er dus geen supply  shortage is voor even
+                # dit zou resulteren in eventjes 0 seconde geen shortage supply voor die order, als je dat wil oplossen moet dat hier
+
                 break
     orderdict['start tijd inventory staal koppelen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
@@ -49,6 +56,9 @@ def event_neworder(instance, settingdistibution_dict):
         for i in range(len(instance.inventories[0])):
             if instance.inventories[0][i][2]['high priority'] == False:
                 instance.inventories[0].insert(i, [math.inf, ordersize, orderdict])
+                # if it is the first in queue, dan kan het zijn dat deze kan met supply, waardoor er dus geen supply  shortage is voor even
+                # dit zou resulteren in eventjes 0 seconde geen shortage supply voor die order, als je dat wil oplossen moet dat hier
+
                 break
     orderdict['start tijd inventory staal buigen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
@@ -68,20 +78,26 @@ def event_staal_buigen_klaar(instance, settingdistibution_dict):
     instance.work_state[0][1] = instance.tijd
     #update subassembly stock
     for i in processed_order[2]['bill of materials']['staal koppelen']['subassembly'].keys():
+        # for the measures, add before and after the updating to have the complete lines
+        instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
         instance.stockstate_subassemblies[1][i] += processed_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
         instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
+
+    # check whether this solves sub assembly shortage in stock, if there was one (first part of if)
+    if len(instance.measures['supply shortage periods']['staal koppelen']) > 0 and len(instance.measures['supply shortage periods']['staal koppelen'][-1]) == 1 \
+            and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'].keys()) \
+            and all(instance.stockstate_subassemblies[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'].keys()):
+        for i in range(len(instance.inventories[1])):
+            if len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage']) > 0 and len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1]) == 1:
+                instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1].append(instance.tijd)
+        # update the supply shortage measure, als er hiervoor supply shortage was
+        instance.measures['supply shortage periods']['staal koppelen'][-1].append(instance.tijd)
 
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
 
     # what goes out of the machine (might needed the subassembly to start)
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
-
-    # what goes out of the machine:
-    # processed_order[0] = math.inf
-    # processed_order[2]['start tijd inventory staal koppelen'] = instance.tijd
-    # instance.inventories[1].append(processed_order)
-    # instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
     instance.nexteventtimes["staal buigen klaar"] = instance.orders_inprocess0[0][0]
     instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
@@ -96,20 +112,26 @@ def event_staal_koppelen_klaar(instance, settingdistibution_dict):
     instance.work_state[1][1] = instance.tijd
     #update subassembly stock
     for i in processed_order[2]['bill of materials']['omhulsel maken']['subassembly'].keys():
+        # for the measures, add before and after the updating to have the complete lines
+        instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
         instance.stockstate_subassemblies[2][i] += processed_order[2]['bill of materials']['omhulsel maken']['subassembly'][i]
         instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
+
+    # check whether this solves sub assembly shortage in stock, if there was one (first part of if)
+    if len(instance.measures['supply shortage periods']['omhulsel maken']) > 0 and len(instance.measures['supply shortage periods']['omhulsel maken'][-1]) == 1 \
+            and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'].keys()) \
+            and all(instance.stockstate_subassemblies[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'].keys()):
+        for i in range(len(instance.inventories[2])):
+            if len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage']) > 0 and len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1]) == 1:
+                instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1].append(instance.tijd)
+        # update the supply shortage measure, als er hiervoor supply shortage was
+        instance.measures['supply shortage periods']['omhulsel maken'][-1].append(instance.tijd)
 
     # what goes in the machine:
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
     # what goes out of the machine (might needed the subassembly to start)
     instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
-
-    # what goes out of the machine:
-    # processed_order[0] = math.inf
-    # processed_order[2]['start tijd inventory omhulsel maken'] = instance.tijd
-    # instance.inventories[2].append(processed_order)
-    # instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
 
     instance.nexteventtimes['staal koppelen klaar'] = instance.orders_inprocess1[0][0]
     instance.nexteventtimes["omhulsel klaar"] = instance.orders_inprocess2[0][0]
@@ -161,7 +183,8 @@ def event_order_new_stuffing(instance, settingdistibution_dict):
     return instance
 
 def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
-
+    # for the measures, add before and after the updating to have the complete lines
+    instance.measures['stock levels']['raw materials']['stalen stangen'].append([instance.materialstate[0]['stalen stangen'], instance.tijd])
     instance.materialstate[0]['stalen stangen'] += instance.supplyorders_stalenstangen_inprocess[0][1]
     instance.measures['stock levels']['raw materials']['stalen stangen'].append([instance.materialstate[0]['stalen stangen'], instance.tijd])
     instance.supplyorders_stalenstangen_inprocess.pop(0)
@@ -185,19 +208,22 @@ def event_supplyorder_stalen_stangen(instance, settingdistibution_dict):
     return instance
 
 def event_supplyorder_koppeldraad(instance, settingdistibution_dict):
-
+    # for the measures, add before and after the updating to have the complete lines
+    instance.measures['stock levels']['raw materials']['koppeldraad'].append([instance.materialstate[1]['koppeldraad'], instance.tijd])
     instance.materialstate[1]['koppeldraad'] += instance.supplyorders_koppeldraad_inprocess[0][1]
     instance.measures['stock levels']['raw materials']['koppeldraad'].append([instance.materialstate[1]['koppeldraad'], instance.tijd])
     instance.supplyorders_koppeldraad_inprocess.pop(0)
     instance.nexteventtimes['supply koppeldraad'] = instance.supplyorders_koppeldraad_inprocess[0][0]
 
     # update supply shortage measure of the orders in inventory
-    for i in range(len(instance.inventories[1])):
-        if len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage']) > 0 and len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1]) == 1:
-            instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1].append(instance.tijd)
+    if len(instance.measures['supply shortage periods']['staal koppelen']) > 0 and len(instance.measures['supply shortage periods']['staal koppelen'][-1]) == 1 \
+            and all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'].keys()) \
+            and all(instance.stockstate_subassemblies[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'].keys()):
+        for i in range(len(instance.inventories[1])):
+            if len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage']) > 0 and len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1]) == 1:
+                instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1].append(instance.tijd)
 
-    # update the supply shortage measure, als er hiervoor supply shortage was
-    if len(instance.measures['supply shortage periods']['staal koppelen']) > 0 and len(instance.measures['supply shortage periods']['staal koppelen'][-1]) == 1:
+        # update the supply shortage measure, als er hiervoor supply shortage was
         instance.measures['supply shortage periods']['staal koppelen'][-1].append(instance.tijd)
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.
@@ -209,7 +235,10 @@ def event_supplyorder_koppeldraad(instance, settingdistibution_dict):
     return instance
 
 def event_supplyorder_stuffing(instance, settingdistibution_dict):
-
+    # for the measures, add before and after the updating to have the complete lines
+    instance.measures['stock levels']['raw materials']['soft stuffing'].append([instance.materialstate[2]['soft stuffing'], instance.tijd])
+    instance.measures['stock levels']['raw materials']['medium stuffing'].append([instance.materialstate[2]['medium stuffing'], instance.tijd])
+    instance.measures['stock levels']['raw materials']['hard stuffing'].append([instance.materialstate[2]['hard stuffing'], instance.tijd])
     instance.materialstate[2]['soft stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['soft stuffing']
     instance.materialstate[2]['medium stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['medium stuffing']
     instance.materialstate[2]['hard stuffing'] += instance.supplyorders_stuffing_inprocess[0][1]['hard stuffing']
@@ -220,12 +249,14 @@ def event_supplyorder_stuffing(instance, settingdistibution_dict):
     instance.nexteventtimes['supply stuffing'] = instance.supplyorders_stuffing_inprocess[0][0]
 
     # update supply shortage measure of the orders in inventory
-    for i in range(len(instance.inventories[2])):
-        if len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage']) > 0 and len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1]) == 1:
-            instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1].append(instance.tijd)
+    if len(instance.measures['supply shortage periods']['omhulsel maken']) > 0 and len(instance.measures['supply shortage periods']['omhulsel maken'][-1]) == 1 \
+            and all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'].keys()) \
+            and all(instance.stockstate_subassemblies[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'].keys()):
+        for i in range(len(instance.inventories[2])):
+            if len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage']) > 0 and len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1]) == 1:
+                instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1].append(instance.tijd)
 
-    # update the supply shortage measure, als er hiervoor supply shortage was
-    if len(instance.measures['supply shortage periods']['omhulsel maken']) > 0 and len(instance.measures['supply shortage periods']['omhulsel maken'][-1]) == 1:
+        # update the supply shortage measure, als er hiervoor supply shortage was
         instance.measures['supply shortage periods']['omhulsel maken'][-1].append(instance.tijd)
 
     #if those materials were needed for een order staal buigen om te beginnnen, zet deze in gang.

@@ -8,6 +8,8 @@ def start_process_staal_buigen(instance, settingdistibution_dict):
         newprocessing_order = instance.inventories[0].pop(0)
 
         for i in newprocessing_order[2]['bill of materials']['staal buigen']['raw material'].keys():
+            # for the measures, add before and after the updating to have the complete lines
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[0][i], instance.tijd])
             instance.materialstate[0][i] -= newprocessing_order[2]['bill of materials']['staal buigen']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[0][i], instance.tijd])
 
@@ -61,10 +63,14 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
         instance.work_state[1][1] = instance.tijd
 
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'].keys():
+            # for the measures, add before and after the updating to have the complete lines
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[1][i], instance.tijd])
             instance.materialstate[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[1][i], instance.tijd])
 
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'].keys():
+            # for the measures, add before and after the updating to have the complete lines
+            instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
             instance.stockstate_subassemblies[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
 
@@ -84,7 +90,8 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
 
     #if there are still orders in the queue, update de supply shortage measure als er te weinig matirials zijn
     if  len(instance.inventories[1])>0:
-        if all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'].keys()) == False:
+        if all(instance.materialstate[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['raw material'].keys()) == False or \
+                all(instance.stockstate_subassemblies[1][i] >= instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'][i] for i in instance.inventories[1][0][2]['bill of materials']['staal koppelen']['subassembly'].keys()) == False:
             for i in range(len(instance.inventories[1])):
                 if len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage']) == 0 or len(instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'][-1]) == 2:
                     instance.inventories[1][i][2]['reason inventory staal koppelen']['supply shortage'].append([instance.tijd])
@@ -110,10 +117,14 @@ def start_process_omhulsel_maken(instance, settingdistibution_dict):
         instance.work_state[2][1] = instance.tijd
 
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'].keys():
+            # for the measures, add before and after the updating to have the complete lines
+            instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[2][i], instance.tijd])
             instance.materialstate[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[2][i], instance.tijd])
 
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'].keys():
+            # for the measures, add before and after the updating to have the complete lines
+            instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
             instance.stockstate_subassemblies[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'][i]
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
 
@@ -132,12 +143,13 @@ def start_process_omhulsel_maken(instance, settingdistibution_dict):
 
     #if there are still order in the queue, update de supply shortage measure als er te weinig matirials zijn
     if  len(instance.inventories[2])>0:
-        if all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'].keys()) == False:
+        if all(instance.materialstate[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['raw material'].keys()) == False or \
+                all(instance.stockstate_subassemblies[2][i] >= instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'][i] for i in instance.inventories[2][0][2]['bill of materials']['omhulsel maken']['subassembly'].keys()) == False:
             for i in range(len(instance.inventories[2])):
                 if len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage']) == 0 or len(instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'][-1]) == 2:
                     instance.inventories[2][i][2]['reason inventory omhulsel maken']['supply shortage'].append([instance.tijd])
             # if this is the first order with supply shortage, start the supply shortage measure
-            if len(instance.measures['supply shortage periods']['omhulsel maken']) == 0 or instance.measures['supply shortage periods']['omhulsel maken'][-1] == 2:
+            if len(instance.measures['supply shortage periods']['omhulsel maken']) == 0 or len(instance.measures['supply shortage periods']['omhulsel maken'][-1]) == 2:
                 instance.measures['supply shortage periods']['omhulsel maken'].append([instance.tijd])
 
         if instance.capacities[2] == 0:
