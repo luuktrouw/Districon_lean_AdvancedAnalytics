@@ -1,10 +1,13 @@
 import dash
 import pandas as pd
 import plotly.express as px
-from dash import dcc
-from dash import html
+import dash_daq as daq
+import dash_bootstrap_components as dbc
+from dash import Input, Output, State, html, dcc
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
+
+import Functions
 import main_simulation
 import plottingfunctions
 
@@ -35,17 +38,26 @@ supply_order_interval_time = 24000
 Mean_supplytime_stalen_stangen = 480
 stdev_supplytime_stalen_stangen = 20
 #eorderpoint_stalenstangen = 20
-reorder_upto_point_stalenstangen = 1700
 
 Mean_supplytime_koppeldraad = 480
 stdev_supplytime_koppeldraad = 20
-reorder_upto_point_koppeldraad = 750
 
 Mean_supplytime_stuffing = 480
 stdev_supplytime_stuffing = 20
+
+# suggested reorder up to point of raw materials
+reorder_upto_point_stalenstangen = supply_order_interval_time/Mean_ordertime
+reorder_upto_point_koppeldraad = 750
 reorder_upto_point_softstuffing = 100
 reorder_upto_point_mediumstuffing = 100
 reorder_upto_point_hardstuffing = 100
+
+# # manual reorder up to point of raw materials
+# reorder_upto_point_stalenstangen = 1700
+# reorder_upto_point_koppeldraad = 750
+# reorder_upto_point_softstuffing = 100
+# reorder_upto_point_mediumstuffing = 100
+# reorder_upto_point_hardstuffing = 100
 
 stdev_order_quantity_percentage_of_quantity = 0.01
 # distributions processes
@@ -64,12 +76,24 @@ Mean_fix_staalbuigen_breakdown = 480
 Mean_fix_staalkoppelen_breakdown = 480
 Mean_fix_omhulselmaken_breakdown = 480
 
+# # suggested safety stocks sub assemblies
+# SS_gebogen_stangen = 75
+# SS_gekoppeld_eenpersoons = 10
+# SS_gekoppeld_twijfelaar =  10
+# SS_gekoppeld_queensize =  10
+# SS_gekoppeld_kingsize = 10
+
 # Manual safety stocks sub assemblies
-SS_gebogen_stangen = 0
-SS_gekoppeld_eenpersoons = 0
-SS_gekoppeld_twijfelaar =  0
-SS_gekoppeld_queensize =  0
-SS_gekoppeld_kingsize = 0
+SS_gebogen_stangen = 75
+SS_gekoppeld_eenpersoons = 10
+SS_gekoppeld_twijfelaar =  10
+SS_gekoppeld_queensize =  10
+SS_gekoppeld_kingsize = 10
+
+# wanted succes rate
+wantedsuccesrate = 0.5
+
+
 
 # calculated guess safety stocks all stock levels
 #SS_gebogen_stangen, SS_gekoppeld_eenpersoons, SS_gekoppeld_twijfelaar, SS_gekoppeld_queensize, SS_gekoppeld_kingsize = 10
@@ -105,9 +129,11 @@ settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev'
                            'SS gekoppeld kingsize': SS_gekoppeld_kingsize,
                            'mean deadline order': Mean_order_deadline,
                            'stdev deadline order': stdev_order_deadline,
-                           'high priority chance': high_priority_chance
+                           'high priority chance': high_priority_chance,
+                           'wanted succes rate': wantedsuccesrate,
                            }
 
+settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
 
 ##------------------------------------
 

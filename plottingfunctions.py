@@ -221,8 +221,8 @@ def plot_stocklevels_through_time(timeseriesstocklevel):
 def make_fig_speelveld(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
-    tablecontent = [['doorlooptijd staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen time'], 'Nan'],
-                        ['doorlooptijd staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen time'], 'Nan'],
+    tablecontent = [['doorlooptijd staal buigen', 'Normal', 'no', settingdistibution_dict['mean staal buigen time'], settingdistibution_dict['stdev staal buigen time']],
+                        ['doorlooptijd staal koppelen', 'Normal', 'no', settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time']],
                         ['doorlooptijd omhulsel maken', 'Normal', 'no', settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time']],
                         ['aankomst nieuwe orders', 'Exponential', 'no', settingdistibution_dict['order time mean'], 'Nan'],
                         ['order grootte nieuwe orders', 'Normal', 'no',settingdistibution_dict['order size mean'],settingdistibution_dict['order size stdev'] ],

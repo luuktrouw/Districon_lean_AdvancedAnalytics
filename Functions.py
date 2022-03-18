@@ -1,5 +1,6 @@
 from scipy.stats import norm
 import numpy as np
+import statistics
 
 def close_disruption_measures(measures, time):
     if len(measures['breakdown periods']['staal buigen']) >0:
@@ -36,4 +37,43 @@ def normal_quantile(mean, stdev, quantile):
 def histdata_quantile(data, quantile):
     return np.quantile(data, quantile)
 
+def calculateSafetyStocks(setting_dict):
+    # determine average orders in order interval
+    averagenumorders = setting_dict['supply interval order']/setting_dict['order time mean']
 
+    # determine average deadline duration
+    averagedeadlinestaalbuigen = setting_dict['mean deadline order']
+    averagedeadlinestaalkoppelen = setting_dict['mean deadline order']
+    averagedeadlineomhulselmaken = setting_dict['mean deadline order']
+
+    # average breakdown disruption time per order
+    averagebreakdownfraction_staalbuigen = setting_dict['mean fix staal buigen breakdown']/(setting_dict['mean fix staal buigen breakdown']+setting_dict['mean staal buigen breakdown'])
+    averagebreakdownfraction_staalkoppelen = setting_dict['mean fix staal koppelen breakdown']/(setting_dict['mean fix staal koppelen breakdown']+setting_dict['mean staal koppelen breakdown'])
+    averagebreakdownfraction_omhulselmaken = setting_dict['mean fix omhulsel maken breakdown']/(setting_dict['mean fix omhulsel maken breakdown']+setting_dict['mean omhulsel maken breakdown'])
+
+
+    # determine average needed raw materials in order interval
+    # based on functie in get order info qua hoeveelheden en kansen op wat voor order
+    averageneededstalenstangen = (1/4*8 +1/4*10 +1/4*14 + 1/4*16) * averagenumorders
+    averageneededkoppeldraad = (1/2*4 + 1/2*6)*averagenumorders
+    averageneededsoftstuffing = 1/3*1*averagenumorders
+    averageneededmediumstuffing = 1/3*1*averagenumorders
+    averageneededhardstuffing = 1/3*1*averagenumorders
+
+    #determine the right hand side uit WORD voor alle raw materials
+    RHSstaalbuigen = averagedeadlinestaalbuigen*(1-averagebreakdownfraction_staalbuigen)/averageneededstalenstangen
+    RHSstaalkoppelen = averagedeadlinestaalkoppelen*(1-averagebreakdownfraction_staalkoppelen)/averageneededkoppeldraad
+    RHSsoftstuffuing = averagedeadlineomhulselmaken*(1-averagebreakdownfraction_omhulselmaken)/averageneededsoftstuffing
+    RHSmediumstuffuing = averagedeadlineomhulselmaken*(1-averagebreakdownfraction_omhulselmaken)/averageneededmediumstuffing
+    RHShardstuffuing = averagedeadlineomhulselmaken*(1-averagebreakdownfraction_omhulselmaken)/averageneededhardstuffing
+
+
+    #voor normal distributions calculate the standard inverse cdf for the needed percentage
+    stdnormalinvcdfvalue = statistics.NormalDist().inv_cdf(setting_dict['wanted succes rate'])
+
+
+    #determine for normal distributed processes the needed value of SS
+    SSstaalbuigen = (setting_dict['mean staal buigen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal buigen time'])/RHSstaalbuigen
+
+
+    return setting_dict

@@ -66,14 +66,14 @@ def get_length_neworder(Mean_ordertime, stdev_ordersize):
     return tijd
 
 def get_length_staal_buigen(Mean_process0time):
-    #tijd = round(np.random.normal(Mean_process0time, stdev_process0time), 1)
-    tijd = round(np.random.exponential(Mean_process0time), 1)
+    tijd = round(np.random.normal(Mean_process0time, stdev_process0time), 1)
+    #tijd = round(np.random.exponential(Mean_process0time), 1)
     #print('new time schakel 0: ', tijd)
     return tijd
 
 def get_length_staal_koppelen(Mean_process1time):
-    #tijd = round(np.random.normal(Mean_process1time, stdev_process1time), 1)
-    tijd = round(np.random.exponential(Mean_process1time), 1)
+    tijd = round(np.random.normal(Mean_process1time, stdev_process1time), 1)
+    #tijd = round(np.random.exponential(Mean_process1time), 1)
     #print('new time schakel 1: ', tijd)
     return tijd
 
