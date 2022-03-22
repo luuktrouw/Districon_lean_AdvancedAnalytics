@@ -260,9 +260,9 @@ def make_fig_speelveld(settingdistibution_dict):
         cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
                    line_color='darkslategray',
                    fill_color='lightcyan',
-                   align='left'))
+                   align='left')),
     ],
-                                    #layout_height=500
+                                   layout_width = 500
                                      )
 
     return fig_table_speelveld

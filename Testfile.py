@@ -1,3 +1,4 @@
+
 import dash
 import pandas as pd
 import plotly.express as px
@@ -111,7 +112,7 @@ settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev'
 ##------------------------------------
 
 fig_table_speelveld = plottingfunctions.make_fig_speelveld(settingdistibution_dict)
-
+'''
 finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
 
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
@@ -130,10 +131,34 @@ fig_stocklevels = plottingfunctions.plot_stocklevels_through_time(measures['stoc
 
 fig_VSM_statistics = plottingfunctions.make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles)
 
-external_stylesheets = [dbc.themes.CYBORG]
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+
+app = dash.Dash(__name__,
+                #external_stylesheets=external_stylesheets
+                )
+
+sidebar = html.Div(
+    [
+        html.H2("Sidebar", className="display-4"),
+        html.Hr(),
+        html.P(
+            "A simple sidebar layout with navigation links", className="lead"
+        ),
+        dbc.Nav(
+            [
+                dbc.NavLink("Home", href="/", active="exact"),
+                dbc.NavLink("Page 1", href="/page-1", active="exact"),
+                dbc.NavLink("Page 2", href="/page-2", active="exact"),
+                dbc.NavLink("Page 3", href="/page-3", active="exact"),
+            ],
+            vertical=True,
+            pills=True,
+        ),
+    ],
+    #style=SIDEBAR_STYLE,
+)
 
 app.layout = html.Div([
     dbc.Row( dbc.Col(html.H1("Simulation results with the given settings", style={'text-align':'center'}),
@@ -223,6 +248,104 @@ app.layout = html.Div([
 #     print(option_slctd)
 #     figure = plottingfunctions.plot_gantt_per_order(finished_orders_df, option_slctd)
 #     return figure
+
+if __name__ == '__main__':
+    app.run_server()
+'''
+
+
+
+
+
+# import dash
+# import pandas as pd
+# import plotly.express as px
+# import dash_daq as daq
+# import dash_bootstrap_components as dbc
+# from dash import Input, Output, State, html, dcc
+# import plotly.graph_objects as go
+# from dash.dependencies import Input, Output
+# import main_simulation
+# import plottingfunctions
+
+app = dash.Dash(__name__,
+                #external_stylesheets=external_stylesheets
+                )
+
+card_content = [
+    dbc.CardHeader("Card header"),
+    dbc.CardBody(
+        [
+            html.H5("Card title", className="card-title"),
+            html.P(
+                "This is some card content that we'll reuse",
+                className="card-text",
+            ),
+        ]
+    ),
+]
+
+row_1 = dbc.Row(
+    [
+        dbc.Col(dbc.Card(card_content, color="primary", outline=True)),
+        dbc.Col(dbc.Card(card_content, color="secondary", outline=True)),
+        dbc.Col(dbc.Card(card_content, color="info", outline=True)),
+    ],
+    className="mb-4",
+)
+
+row_2 = dbc.Row(
+    [
+        dbc.Col(dbc.Card(card_content, color="success", outline=True)),
+        dbc.Col(dbc.Card(card_content, color="warning", outline=True)),
+        dbc.Col(dbc.Card(card_content, color="danger", outline=True)),
+    ],
+    className="mb-4",
+)
+
+row_3 = dbc.Row(
+    [
+        dbc.Col(dbc.Card(card_content, color="light", outline=True)),
+        dbc.Col(dbc.Card(card_content, color="dark", outline=True)),
+    ]
+)
+fig = fig_table_speelveld
+
+
+
+navbar = dbc.NavbarSimple(
+    children=[
+        dbc.NavItem(dbc.NavLink("Manager troep", href="Manager")),
+        dbc.NavItem(dbc.NavLink("Settings", href="Settings")),
+        dbc.NavItem(dbc.NavLink("Inventory", href="Inventory")),
+        dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
+    ],
+    id = 'navbarsimple'
+)
+
+page1layout = html.Div([navbar, row_1, row_2, ] )
+page2layout = html.Div([navbar, row_1, row_2,row_2, ] )
+page3layout = html.Div([navbar, row_1, row_2,row_2,row_2, ] )
+page4layout = html.Div([navbar, row_1, row_2,row_2,row_2,row_2, ] )
+
+@app.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/Manager':
+        return page1layout
+    elif pathname == '/Settings':
+        return page2layout
+    elif pathname == '/Inventory':
+        return page3layout
+    elif pathname == '/Lead_times':
+        return page4layout
+    else:
+        return page2layout
+
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
 
 if __name__ == '__main__':
     app.run_server()

@@ -22,7 +22,7 @@ def start_process_staal_buigen(instance, settingdistibution_dict):
         instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
         instance.work_state[0][1] = instance.tijd
-        finish_time_this_order = instance.tijd + Functions_get_info.get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'])
+        finish_time_this_order = instance.tijd + Functions_get_info.get_length_staal_buigen(settingdistibution_dict['mean staal buigen time'], settingdistibution_dict['stdev staal buigen time'])
         finish_time_index = bisect(instance.orders_inprocess0, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal buigen'] = instance.tijd
@@ -74,7 +74,7 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
             instance.stockstate_subassemblies[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
 
-        finish_time_this_order =  instance.tijd + Functions_get_info.get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'])
+        finish_time_this_order =  instance.tijd + Functions_get_info.get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time'])
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal koppelen'] = instance.tijd
