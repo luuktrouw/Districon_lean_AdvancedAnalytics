@@ -8,6 +8,8 @@ import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 
 import Functions
+import Pagelayouts
+from callbacks import get_callbacks
 import main_simulation
 import plottingfunctions
 import Load_settings
@@ -45,61 +47,6 @@ fig_VSM_statistics = plottingfunctions.make_fig_VSM_statistics(means, lower_5_qu
 app = dash.Dash(__name__)
 
 
-navbar = dbc.NavbarSimple(
-    children=[
-        dbc.NavItem(dbc.NavLink("Manager troep", href="Manager")),
-        dbc.NavItem(dbc.NavLink("Settings", href="Settings")),
-        dbc.NavItem(dbc.NavLink("Inventory", href="Inventory")),
-        dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
-    ],
-    id = 'navbarsimple'
-)
-
-# row1_manager =
-
-row1_inventory = dbc.Row(
-    [
-        dbc.Col(dcc.Graph(id = 'speelveld',figure =  fig_table_speelveld)),
-        dbc.Col(dcc.Graph(id = 'speelveld',figure =  fig_table_speelveld)),
-    ],
-    className="mb-4",
-)
-row2_inventory = dbc.Row(
-    [
-        dcc.Dropdown(id='select stock graph', options=[{'label': 'raw material - stalen stangen', 'value': ['raw materials','stalen stangen']},
-                                                       {'label': 'raw material - koppeldraad', 'value': ['raw materials','koppeldraad']},
-                                                       {'label': 'raw material - soft stuffing', 'value': ['raw materials','soft stuffing']},
-                                                       {'label': 'raw material - medium stuffing', 'value': ['raw materials','medium stuffing']},
-                                                       {'label': 'raw material - hard stuffing', 'value': ['raw materials','hard stuffing']},
-                                                       {'label': 'subassembly - gebogen stangen', 'value': ['subassemblies','gebogen stangen']},
-                                                       {'label': 'subassembly - gekoppeld eenpersoons', 'value': ['subassemblies','gekoppeld eenpersoons']},
-                                                       {'label': 'subassembly - gekoppeld twijfelaar', 'value': ['subassemblies','gekoppeld twijfelaar']},
-                                                       {'label': 'subassembly - gekoppeld queensize', 'value': ['subassemblies','gekoppeld queensize']},
-                                                       {'label': 'subassembly - gekoppeld kingsize', 'value': ['subassemblies','gekoppeld kingsize']}
-                                                       ], multi=False,
-             value=['raw materials','stalen stangen'], style={'width': '100%'}),
-    ],
-    className="mb-4",
-)
-row3_inventory = dbc.Row(
-    [
-        dbc.Col(dcc.Graph(id = 'stock level graph', figure ={}),),
-    ],
-    className="mb-4",
-)
-
-
-
-page_manager = html.Div([navbar, row1_inventory, row1_inventory, ] )
-
-
-page_settings = html.Div([navbar, row1_inventory, row1_inventory, ] )
-
-
-page_inventory = html.Div([navbar, row1_inventory, row2_inventory, row3_inventory,] )
-
-
-page_leadtimes = html.Div([navbar, row1_inventory, row1_inventory, ] )
 
 # app.layout = html.Div([
 #             dbc.Row( dbc.Col(html.H1("Simulation results with the given settings", style={'text-align':'center'}),
@@ -144,65 +91,14 @@ page_leadtimes = html.Div([navbar, row1_inventory, row1_inventory, ] )
 #
 # ])
 
-@app.callback(Output(component_id= 'process measure', component_property= 'figure'),
-              [Input(component_id='select measure', component_property= 'value')])
-def update_graph(option_slctd):
-    if option_slctd == 1:
-        figu = fig_total_thoughout_time
-    elif option_slctd == 2:
-        figu = fig_total_queue_time
-    elif option_slctd == 3:
-        figu = fig_queue_time_staal_buigen
-    elif option_slctd == 4:
-        figu = fig_queue_time_staal_koppelen
-    elif option_slctd == 5:
-        figu = fig_queue_time_omhulsel_maken
 
-    return figu
-
-@app.callback(Output(component_id= 'Pie reason queue', component_property= 'figure'),
-              [Input(component_id='slider disruption measure percentage', component_property= 'value')])
-def update_single_order_graph(option_slctd):
-    #if text in finished_orders_df['orderID']:
-    figure = plottingfunctions.plot_fractions_wait_time_reasons(sortfinisheddf, option_slctd)
-    return figure
-
-# @app.callback(Output(component_id= 'stock level graph', component_property= 'figure'),
-#               [Input(component_id='select stock graph', component_property= 'value')])
-# def update_stocklevelsgraph(option_slctd):
-#     #if text in finished_orders_df['orderID']:
-#     print(option_slctd)
-#     figure = plottingfunctions.plot_stocklevels_through_time(measures['stock levels'][option_slctd[0]][option_slctd[1]])
-#     return figure
-
-@app.callback(Output(component_id= 'specific order disruptions', component_property= 'figure'),
-              [Input(component_id='input specific order', component_property= 'value')])
-def update_single_order_graph(option_slctd):
-    #if text in finished_orders_df['orderID']:
-    print(option_slctd)
-    figure = plottingfunctions.plot_gantt_per_order(finished_orders_df, option_slctd)
-    return figure
-
-
-
-@app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
-def display_page(pathname):
-    if pathname == '/Manager':
-        return page_manager
-    elif pathname == '/Settings':
-        return page_settings
-    elif pathname == '/Inventory':
-        return page_inventory
-    elif pathname == '/Lead_times':
-        return page_leadtimes
-    else:
-        return page_manager
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
+
+get_callbacks(app)
 
 if __name__ == '__main__':
     app.run_server()

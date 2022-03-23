@@ -267,6 +267,31 @@ def make_fig_speelveld(settingdistibution_dict):
 
     return fig_table_speelveld
 
+def make_fig_speelveldprocessschakels(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['doorlooptijd staal buigen', 'Normal', 'no', settingdistibution_dict['mean staal buigen time'], settingdistibution_dict['stdev staal buigen time']],
+                        ['doorlooptijd staal koppelen', 'Normal', 'no', settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time']],
+                        ['doorlooptijd omhulsel maken', 'Normal', 'no', settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time']],
+                        ['capacity staal buigen', 'Deterministic', 'no',settingdistibution_dict['capacity staal buigen'], 'Nan' ],
+                        ['capacity staal koppelen', 'Deterministic', 'no', settingdistibution_dict['capacity staal koppelen'], 'Nan'],
+                        ['capacity omhulsel maken', 'Deterministic', 'no', settingdistibution_dict['capacity omhulsel maken'], 'Nan'],
+                        ]
+    fig_table_speelveldprocessschakels = go.Figure(data=[go.Table(
+                                        header=dict(values=headercontent,
+                                                    line_color='darkslategray',
+                                                    fill_color='lightskyblue',
+                                                    align='left'),
+                                        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
+                                                   line_color='darkslategray',
+                                                   fill_color='lightcyan',
+                                                   align='left')),
+                                        ],
+                                   layout_width = 500
+                                     )
+
+    return fig_table_speelveldprocessschakels
+
 def make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles):
     fig_VSM_statistics = go.Figure(data=[go.Table(
         header=dict(values=['process step', "inv staal buigen", 'staal buigen', 'inv staal koppelen', 'staal koppelen',
