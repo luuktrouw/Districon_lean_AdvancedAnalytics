@@ -132,6 +132,9 @@ def runsimulation(settingdistibution_dict):
     #########
     finished_orders_df = pd.DataFrame(instance.finishedorders)
 
+    #sommige disruptions kunnen nog niet gesloten zijn, bijvoorbeeld als de order al wel klaar is (omhulsel maken klaar), maar nog niet staal buigen ding heeft afgerond en dan stopt de tijd plots. dam telt t niet als helemaal klaar, dus verwijder uit finished orders
+    finished_orders_df = Functions.delete_nonfinished_orders_disruptions(finished_orders_df)
+
     finished_orders_df['total queue time'] = [finished_orders_df['tijd inventory staal buigen'][i] + finished_orders_df['tijd inventory staal koppelen'][i] + finished_orders_df['tijd inventory omhulsel maken'][i] for i in range(len(finished_orders_df))]
 
     finished_orders_df['total producing time'] = [finished_orders_df['tijd staal buigen'][i] + finished_orders_df['tijd staal koppelen'][i] + finished_orders_df['tijd omhulsel maken'][i] for i in range(len(finished_orders_df))]
@@ -168,7 +171,7 @@ def runsimulation(settingdistibution_dict):
     fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
 
 
-    return finished_orders_df, instance.measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions
+    return finished_orders_df, instance.measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, instance.tijd
 
 
 #fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")

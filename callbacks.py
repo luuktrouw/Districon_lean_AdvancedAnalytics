@@ -16,9 +16,8 @@ import Load_settings
 
 settingdistibution_dict = Load_settings.load_settings()
 
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
+finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
 print('huh')
-fig_table_speelveld = plottingfunctions.make_fig_speelveld(settingdistibution_dict)
 
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
 

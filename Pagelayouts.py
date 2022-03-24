@@ -16,9 +16,8 @@ import Load_settings
 
 settingdistibution_dict = Load_settings.load_settings()
 
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions = main_simulation.runsimulation(settingdistibution_dict)
+finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
-fig_table_speelveld = plottingfunctions.make_fig_speelveld(settingdistibution_dict)
 
 navbar = dbc.NavbarSimple(
         children=[
@@ -27,7 +26,8 @@ navbar = dbc.NavbarSimple(
             dbc.NavItem(dbc.NavLink("Inventory", href="Inventory")),
             dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
         ],
-        id = 'navbarsimple'
+        id = 'navbarsimple',
+        color="primary"
     )
 
 def get_pagelayout_manager():
@@ -152,7 +152,7 @@ def get_pagelayout_inventory():
         [
             dbc.Col([
                         html.H5("fractie tijd out of order", style={'text-align': 'center'}),
-                        dcc.Graph(id='outofstockfractie', figure={}),
+                        dcc.Graph(id='outofstockfractie', figure=plottingfunctions.make_barchart_disruptionfracs(measures, totaltime)),
                     ],  style={'width': '40%'}),
             dbc.Col([
                         html.H5("average stock levels V alle materials", style={'text-align': 'center'}),
@@ -201,14 +201,14 @@ def get_pagelayout_leadtimes():
                     html.H5("Throughput times of the orders", style={'text-align': 'center'}),
                     dbc.Row(dropdown_schakel_leadtimes),
                     dbc.Row(dcc.Graph(id = 'process measure', figure ={})),
-                ]
+                ],  style={'width': '40%'}
             ),
             dbc.Col(
                 [
                     html.H5("Wait times per schakel", style={'text-align': 'center'}),
                     dbc.Row(dropdown_schakel_waittimes),
                     dbc.Row(dcc.Graph(id = 'schakel wait times', figure ={})),
-                ]
+                ],  style={'width': '40%'}
             ),
         ]
     )
@@ -220,13 +220,13 @@ def get_pagelayout_leadtimes():
                     html.H5("Specifieke order verloop", style={'text-align': 'center'}),
                     dbc.Row(dcc.Input(id = 'input specific order', type = 'text', placeholder= 'type orderID')),
                     dbc.Row(dcc.Graph(id = 'specific order disruptions', figure = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID']))),
-                ]
+                ], style={'width': '40%'}
             ),
             dbc.Col(
                 [
                     html.H5("All disruption intervals", style={'text-align': 'center'}),
                     dcc.Graph(id = 'Gantt_all_disruptions', figure = fig_gantt_disruptions),
-                ]
+                ], style={'width': '40%'}
             ),
         ]
     )

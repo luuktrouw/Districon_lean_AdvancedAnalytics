@@ -162,6 +162,8 @@ def plot_gantt_per_order(finishedordersdf, ordername):
 def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
     longestprocesstimesdf = sortfinisheddf.head(int(percentage/100 * len(sortfinisheddf)))
 
+    print(len(longestprocesstimesdf))
+
     # neemt totaal van alle processen, dus niet specifiek voor staal buigen bijvoorbeeld
     sum_other_wait_time = 0
     sum_wait_time_shortage_supply = 0
@@ -171,23 +173,57 @@ def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
 
         # loop over alle process stappen & dan disruptions erin
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'])):
+
+
+            if len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j])
+
+
             sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['supply shortage'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'])):
+
+
+            if len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j])
+
+
             sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['supply shortage'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'])):
+
+
             if len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j]) == 1:
                 print(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j])
                 print('hoi')
-            sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
 
+
+            sum_wait_time_shortage_supply += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['supply shortage'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'])):
+
+
+            if len(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j])
+
+
             sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal buigen']['breakdown'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'])):
+
+
+            if len(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j])
+
+
             sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory staal koppelen']['breakdown'][j][0]
         for j in range(len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'])):
+
+
+            if len(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j]) == 1:
+                print(longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j])
+
+
             sum_wait_time_breakdowns += longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][1] - longestprocesstimesdf.iloc[i]['reason inventory omhulsel maken']['breakdown'][j][0]
 
     sum_other_wait_time -= sum_wait_time_shortage_supply + sum_wait_time_breakdowns
+    print([sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply])
 
     fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
     #fig.show()
@@ -276,26 +312,6 @@ def plot_stocklevels_through_time(timeseriesstocklevel):
     fig = px.line(dfforgraph, x="x", y="y", title="timeseries stock levels")
 
     return fig
-
-def make_fig_speelveld(settingdistibution_dict):
-    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
-
-    tablecontent = [
-                        ]
-    fig_table_speelveld = go.Figure(data=[go.Table(
-        header=dict(values=headercontent,
-                    line_color='darkslategray',
-                    fill_color='lightskyblue',
-                    align='left'),
-        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
-                   line_color='darkslategray',
-                   fill_color='lightcyan',
-                   align='left')),
-    ],
-                                   layout_width = 500
-                                     )
-
-    return fig_table_speelveld
 
 def make_fig_speelveldprocessschakels(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
@@ -402,6 +418,51 @@ def make_fig_speelveldsupply(settingdistibution_dict):
                                      )
 
     return fig_table_speelveldsupply
+
+def make_barchart_disruptionfracs(measures, totaltijd):
+
+    totalbreakdowntimestaalbuigen = 0
+    totalbreakdowntimestaalkoppelen = 0
+    totalbreakdowntimeomhulselmaken = 0
+    totalsupplyshortagetimestaalbuigen = 0
+    totalsupplyshortagetimestaalkoppelen = 0
+    totalsupplyshortagetimeomhulselmaken = 0
+
+    for i in range(len(measures['breakdown periods']['staal buigen'])):
+        totalbreakdowntimestaalbuigen += measures['breakdown periods']['staal buigen'][i][1] - measures['breakdown periods']['staal buigen'][i][0]
+
+    for i in range(len(measures['breakdown periods']['staal koppelen'])):
+        totalbreakdowntimestaalkoppelen += measures['breakdown periods']['staal koppelen'][i][1] - measures['breakdown periods']['staal koppelen'][i][0]
+
+    for i in range(len(measures['breakdown periods']['omhulsel maken'])):
+        totalbreakdowntimeomhulselmaken += measures['breakdown periods']['omhulsel maken'][i][1] - measures['breakdown periods']['omhulsel maken'][i][0]
+
+    for i in range(len(measures['supply shortage periods']['staal buigen'])):
+        totalsupplyshortagetimestaalbuigen += measures['supply shortage periods']['staal buigen'][i][1] -   measures['supply shortage periods']['staal buigen'][i][0]
+
+    for i in range(len(measures['supply shortage periods']['staal koppelen'])):
+        totalsupplyshortagetimestaalkoppelen += measures['supply shortage periods']['staal koppelen'][i][1] -  measures['supply shortage periods']['staal koppelen'][i][0]
+
+    for i in range(len(measures['supply shortage periods']['omhulsel maken'])):
+        totalsupplyshortagetimeomhulselmaken += measures['supply shortage periods']['omhulsel maken'][i][1] - measures['supply shortage periods']['omhulsel maken'][i][0]
+
+    fracbreakdowntimestaalbuigen = round(totalbreakdowntimestaalbuigen/totaltijd,2)
+    fracbreakdowntimestaalkoppelen = round(totalbreakdowntimestaalkoppelen/totaltijd,2)
+    fracbreakdowntimeomhulselmaken = round(totalbreakdowntimeomhulselmaken/totaltijd,2)
+    fracsupplyshortagetimestaalbuigen = round(totalsupplyshortagetimestaalbuigen/totaltijd,2)
+    fracsupplyshortagetimestaalkoppelen = round(totalsupplyshortagetimestaalkoppelen/totaltijd,2)
+    fracsupplyshortagetimeomhulselmaken = round(totalsupplyshortagetimeomhulselmaken/totaltijd,2)
+
+    fractions = [fracbreakdowntimestaalbuigen, fracbreakdowntimestaalkoppelen, fracbreakdowntimeomhulselmaken,fracsupplyshortagetimestaalbuigen ,fracsupplyshortagetimestaalkoppelen,fracsupplyshortagetimeomhulselmaken]
+
+    disruptionnames = ['breakdown staal buigen', 'breakdown staal koppelen','breakdown omhulsel maken','supply shortage staal buigen', 'supply shortage staal koppelen','supply shortage omhulsel maken',]
+
+
+    barchart_disruptionsfracs = px.bar( y=fractions, x=disruptionnames, text_auto=True,)
+
+    return barchart_disruptionsfracs
+
+
 
 def make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles):
     fig_VSM_statistics = go.Figure(data=[go.Table(

@@ -28,6 +28,17 @@ def close_disruption_measures(measures, time):
             measures['supply shortage periods']['omhulsel maken'][-1].append(time)
     return measures
 
+#sommige disruptions kunnen nog niet gesloten zijn, bijvoorbeeld als de order al wel klaar is (omhulsel maken klaar), maar nog niet staal buigen ding heeft afgerond en dan stopt de tijd plots. dam telt t niet als helemaal klaar, dus verwijder uit finished orders
+def delete_nonfinished_orders_disruptions(finished_orders):
+    for i in reversed(range(len(finished_orders))):
+        if np.isnan(finished_orders['eind tijd staal buigen'][i]):
+            finished_orders = finished_orders.drop(i)
+
+        elif np.isnan(finished_orders['eind tijd staal koppelen'][i]):
+            finished_orders = finished_orders.drop(i)
+
+    return finished_orders
+
 def exponential_quantile(mean, quantile):
     return -math.log(1-quantile)*mean
 
@@ -74,6 +85,6 @@ def calculateSafetyStocks(setting_dict):
 
     #determine for normal distributed processes the needed value of SS
     SSstaalbuigen = (setting_dict['mean staal buigen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal buigen time'])/RHSstaalbuigen
-
+    setting_dict['reorder upto stalen stangenn'] = SSstaalbuigen
 
     return setting_dict

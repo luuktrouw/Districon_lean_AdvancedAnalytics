@@ -34,7 +34,7 @@ def load_settings():
     stdev_supplytime_stuffing = 20
 
     # suggested reorder up to point of raw materials
-    reorder_upto_point_stalenstangen = supply_order_interval_time / Mean_ordertime
+    reorder_upto_point_stalenstangen = 750
     reorder_upto_point_koppeldraad = 750
     reorder_upto_point_softstuffing = 100
     reorder_upto_point_mediumstuffing = 100
@@ -79,7 +79,7 @@ def load_settings():
     SS_gekoppeld_kingsize = 10
 
     # wanted succes rate
-    wantedsuccesrate = 0.5
+    wantedsuccesrate = 0.7
 
     # calculated guess safety stocks all stock levels
     # SS_gebogen_stangen, SS_gekoppeld_eenpersoons, SS_gekoppeld_twijfelaar, SS_gekoppeld_queensize, SS_gekoppeld_kingsize = 10
