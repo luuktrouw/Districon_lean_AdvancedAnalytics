@@ -22,7 +22,7 @@ fig_table_speelveld = plottingfunctions.make_fig_speelveld(settingdistibution_di
 
 navbar = dbc.NavbarSimple(
         children=[
-            dbc.NavItem(dbc.NavLink("Manager troep", href="Manager")),
+            dbc.NavItem(dbc.NavLink("Managerial summary", href="Manager")),
             dbc.NavItem(dbc.NavLink("Settings", href="Settings")),
             dbc.NavItem(dbc.NavLink("Inventory", href="Inventory")),
             dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
@@ -31,77 +31,38 @@ navbar = dbc.NavbarSimple(
     )
 
 def get_pagelayout_manager():
-    headline = html.H1("Managerial information", style={'text-align': 'center'})
+    headline = html.H1("Managerial Summary", style={'text-align': 'center'})
 
+    percdeadlinemade = plottingfunctions.get_perc_deadlines_met(finished_orders_df)
     card_fracdeadlinesmade =[
-        dbc.CardHeader("percentage deadlines made"),
+        dbc.CardHeader("Deadlines made"),
         dbc.CardBody(
             [
-                html.H5("percentage", className="card-title"),
+                html.P(str(percdeadlinemade)+'%', className="card-title"),
             ]
         ),
     ]
 
+    prios = finished_orders_df[finished_orders_df['high priority'] == True]
+    if len(prios)>0:
+        perc_prio_deadlinemade = str(plottingfunctions.get_perc_deadlines_met(prios)) + '%'
+    else: perc_prio_deadlinemade = 'no simulated priority orders'
     card_fracprio_deadlinesmade =[
-        dbc.CardHeader("percentage priority deadlines made"),
+        dbc.CardHeader("Priority deadlines made"),
         dbc.CardBody(
             [
-                html.H5("percentage", className="card-title"),
+                html.P(str(perc_prio_deadlinemade), className="card-title"),
             ]
         ),
     ]
 
-    card_average_throughputtime = [
-        dbc.CardHeader("average throughput time"),
-        dbc.CardBody(
-            [
-                html.H5("time", className="card-title"),
-                html.P(
-                    ".05 quantile - .95 quantile",
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+    card_average_throughputtime = plottingfunctions.get_cardtotalthroughput_time(means, lower_5_quantiles, upper_95_quantiles)
 
-    card_average_lateness = [
-        dbc.CardHeader("Average lateness"),
-        dbc.CardBody(
-            [
-                html.H5("time", className="card-title"),
-                html.P(
-                    ".05 quantile - .95 quantile",
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+    card_average_lateness = plottingfunctions.get_cardlateness_time(means, lower_5_quantiles, upper_95_quantiles)
 
-    card_average_waitingtime = [
-        dbc.CardHeader("Average waiting time"),
-        dbc.CardBody(
-            [
-                html.H5('time', className="card-title"),
-                html.P(
-                    ".05 quantile - .95 quantile",
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+    card_average_waitingtime = plottingfunctions.get_cardtotalwaiting_time(means, lower_5_quantiles, upper_95_quantiles)
 
-    card_average_timeproducing = [
-        dbc.CardHeader("Average producing time"),
-        dbc.CardBody(
-            [
-                html.H5("time", className="card-title"),
-                html.P(
-                    ".05 quantile - .95 quantile",
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+    card_average_timeproducing = plottingfunctions.get_cardtotalproducing_time(means, lower_5_quantiles, upper_95_quantiles)
 
     row1_manager = dbc.Row(
         [
@@ -131,17 +92,16 @@ def get_pagelayout_manager():
     page_manager = html.Div([navbar,headline, row1_manager,  row2_manager, ])
     return page_manager
 
-
 def get_pagelayout_settings():
     headline = html.H1("Settings", style={'text-align': 'center'})
 
     table_processschakels = plottingfunctions.make_fig_speelveldprocessschakels(settingdistibution_dict)
 
-    table_breakdowns = plottingfunctions.make_fig_speelveldprocessschakels(settingdistibution_dict)
+    table_breakdowns = plottingfunctions.make_fig_speelveldbreakdowns(settingdistibution_dict)
 
-    table_orders =  plottingfunctions.make_fig_speelveldprocessschakels(settingdistibution_dict)
+    table_orders =  plottingfunctions.make_fig_speelveldorders(settingdistibution_dict)
 
-    table_suppliers =  plottingfunctions.make_fig_speelveldprocessschakels(settingdistibution_dict)
+    table_suppliers =  plottingfunctions.make_fig_speelveldsupply(settingdistibution_dict)
 
     row1_settings = dbc.Row(
         [
@@ -173,7 +133,7 @@ def get_pagelayout_settings():
     return page_settings
 
 def get_pagelayout_inventory():
-    headline = html.H1("Lead and wait time results", style={'text-align': 'center'})
+    headline = html.H1("Inventory results", style={'text-align': 'center'})
 
     dropdown_materials = dcc.Dropdown(id='select stock graph', options=[{'label': 'raw material - stalen stangen', 'value': ['raw materials','stalen stangen']},
                                                            {'label': 'raw material - koppeldraad', 'value': ['raw materials','koppeldraad']},
@@ -216,7 +176,6 @@ def get_pagelayout_inventory():
     page_inventory = html.Div([navbar, headline, row1_inventory, row2_inventory, ])
 
     return page_inventory
-
 
 def get_pagelayout_leadtimes():
     headline = html.H1("Lead and wait time results", style={'text-align': 'center'})
@@ -277,48 +236,11 @@ def get_pagelayout_leadtimes():
 
 def get_pagelayouts(settingdistibution_dict):
 
-
-    # row1_manager =
-
-    row1_inventory = dbc.Row(
-        [
-            dbc.Col(dcc.Graph(id = 'speelveld',figure =  plottingfunctions.make_fig_speelveld(settingdistibution_dict))),
-            dbc.Col(dcc.Graph(id = 'speelveld',figure =  plottingfunctions.make_fig_speelveld(settingdistibution_dict))),
-        ],
-        className="mb-4",
-    )
-    row2_inventory = dbc.Row(
-        [
-            dcc.Dropdown(id='select stock graph', options=[{'label': 'raw material - stalen stangen', 'value': ['raw materials','stalen stangen']},
-                                                           {'label': 'raw material - koppeldraad', 'value': ['raw materials','koppeldraad']},
-                                                           {'label': 'raw material - soft stuffing', 'value': ['raw materials','soft stuffing']},
-                                                           {'label': 'raw material - medium stuffing', 'value': ['raw materials','medium stuffing']},
-                                                           {'label': 'raw material - hard stuffing', 'value': ['raw materials','hard stuffing']},
-                                                           {'label': 'subassembly - gebogen stangen', 'value': ['subassemblies','gebogen stangen']},
-                                                           {'label': 'subassembly - gekoppeld eenpersoons', 'value': ['subassemblies','gekoppeld eenpersoons']},
-                                                           {'label': 'subassembly - gekoppeld twijfelaar', 'value': ['subassemblies','gekoppeld twijfelaar']},
-                                                           {'label': 'subassembly - gekoppeld queensize', 'value': ['subassemblies','gekoppeld queensize']},
-                                                           {'label': 'subassembly - gekoppeld kingsize', 'value': ['subassemblies','gekoppeld kingsize']}
-                                                           ], multi=False,
-                 value=['raw materials','stalen stangen'], style={'width': '100%'}),
-        ],
-        className="mb-4",
-    )
-    row3_inventory = dbc.Row(
-        [
-            dbc.Col(dcc.Graph(id = 'stock level graph', figure ={}),),
-        ],
-        className="mb-4",
-    )
-
     page_manager = get_pagelayout_manager()
-
 
     page_settings = get_pagelayout_settings()
 
-
     page_inventory = get_pagelayout_inventory()
-
 
     page_leadtimes = get_pagelayout_leadtimes()
 

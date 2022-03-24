@@ -2,7 +2,8 @@ import pandas as pd
 import plotly.express as px
 import datetime
 import plotly.graph_objects as go
-
+from dash import Input, Output, State, html, dcc
+import dash_bootstrap_components as dbc
 
 
 def plotworkstates_fractions_staalbuigen(work_state_times):
@@ -192,7 +193,7 @@ def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
     #fig.show()
     return fig
 
-def plot_fraction_deadlines_met(finished_orders_df):
+def get_perc_deadlines_met(finished_orders_df):
     counter_orders_met = 0
 
     for i in finished_orders_df.index:
@@ -200,15 +201,73 @@ def plot_fraction_deadlines_met(finished_orders_df):
             counter_orders_met += 1
 
     fraction_orders_met = counter_orders_met/len(finished_orders_df)
+    percentage = round(fraction_orders_met*100,2)
 
-    fig_order_deadlines_met = go.Figure(data=[go.Table(
-        header=dict(values=['Percentage Deadlines Made'],
-                    line_color='darkslategray',
-                    fill_color='lightskyblue'),
-        cells=dict(values=[[fraction_orders_met]]), columnwidth= 30)
-    ])
+    return percentage
 
-    return fig_order_deadlines_met
+def get_cardtotalthroughput_time(means, lower_5_quantiles, upper_95_quantiles):
+    meann = str(round(means['total process time'],2))
+    quantiles = str(round(lower_5_quantiles['total process time'], 1)) + '-' + str(
+                                round(upper_95_quantiles['total process time'], 1))
+    cardthrougputtime = [
+        dbc.CardHeader("Average throughput time"),
+        dbc.CardBody(
+            [
+                html.P(meann, className="card-title"),
+                html.P(quantiles),
+            ]
+        ),
+    ]
+
+    return cardthrougputtime
+
+def get_cardlateness_time(means, lower_5_quantiles, upper_95_quantiles):
+    meann = str(round(means['lateness'],2))
+    quantiles = str(round(lower_5_quantiles['lateness'], 1)) + '-' + str(
+                                round(upper_95_quantiles['lateness'], 1))
+    cardlatenesstime = [
+        dbc.CardHeader("Average lateness (nu incl on time orders als 0)"),
+        dbc.CardBody(
+            [
+                html.P(meann, className="card-title"),
+                html.P(quantiles),
+            ]
+        ),
+    ]
+
+    return cardlatenesstime
+
+def get_cardtotalwaiting_time(means, lower_5_quantiles, upper_95_quantiles):
+    meann = str(round(means['total queue time'],2))
+    quantiles = str(round(lower_5_quantiles['total queue time'], 1)) + '-' + str(
+                                round(upper_95_quantiles['total queue time'], 1))
+    cardwaitingtime = [
+        dbc.CardHeader("Average queue time"),
+        dbc.CardBody(
+            [
+                html.P(meann, className="card-title"),
+                html.P(quantiles),
+            ]
+        ),
+    ]
+
+    return cardwaitingtime
+
+def get_cardtotalproducing_time(means, lower_5_quantiles, upper_95_quantiles):
+    meann = str(round(means['total producing time'],2))
+    quantiles = str(round(lower_5_quantiles['total producing time'], 1)) + '-' + str(
+                                round(upper_95_quantiles['total producing time'], 1))
+    cardproducingtime = [
+        dbc.CardHeader("Average producing time"),
+        dbc.CardBody(
+            [
+                html.P(meann, className="card-title"),
+                html.P(quantiles),
+            ]
+        ),
+    ]
+
+    return cardproducingtime
 
 def plot_stocklevels_through_time(timeseriesstocklevel):
     xas = [timeseriesstocklevel[i][1] for i in range(len(timeseriesstocklevel))]
@@ -221,36 +280,7 @@ def plot_stocklevels_through_time(timeseriesstocklevel):
 def make_fig_speelveld(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
-    tablecontent = [['doorlooptijd staal buigen', 'Normal', 'no', settingdistibution_dict['mean staal buigen time'], settingdistibution_dict['stdev staal buigen time']],
-                        ['doorlooptijd staal koppelen', 'Normal', 'no', settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time']],
-                        ['doorlooptijd omhulsel maken', 'Normal', 'no', settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time']],
-                        ['aankomst nieuwe orders', 'Exponential', 'no', settingdistibution_dict['order time mean'], 'Nan'],
-                        ['order grootte nieuwe orders', 'Normal', 'no',settingdistibution_dict['order size mean'],settingdistibution_dict['order size stdev'] ],
-                        ['tijd tot nieuwe breakdown staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen breakdown'], 'Nan'],
-                        ['tijd tot nieuwe breakdown staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen breakdown'], 'Nan'],
-                        ['tijd tot nieuwe breakdown omhulsel maken', 'Exponential', 'no', settingdistibution_dict['mean omhulsel maken breakdown'], 'Nan'],
-                        ['tijd breakdown fixen staal buigen', 'Exponential', 'no', settingdistibution_dict['mean fix staal buigen breakdown'], 'Nan'],
-                        ['tijd breakdown fixen staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean fix staal koppelen breakdown'], 'Nan'],
-                        ['tijd breakdown fixen omhulsel maken', 'Exponential', 'no',settingdistibution_dict['mean fix omhulsel maken breakdown'] , 'Nan'],
-                        [ 'reorder per tijdunits', 'Deterministic', 'no',settingdistibution_dict['supply interval order'] , 'Nan'],
-                        ['reorder up to point stalen stangen', 'Deterministic', 'no',settingdistibution_dict['reorder upto stalen stangen'], 'Nan'],
-                        ['reorder up to point koppeldraad', 'Deterministic', 'no',settingdistibution_dict['reorder upto koppeldraad'], 'Nan'],
-                        ['reorder up to point soft stuffing', 'Deterministic', 'no',settingdistibution_dict['reorder upto soft stuffing'], 'Nan'],
-                        ['reorder up to point medium stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto medium stuffing'], 'Nan'],
-                        ['reorder up to point hard stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto hard stuffing'], 'Nan'],
-                        ['capacity staal buigen', 'Deterministic', 'no',settingdistibution_dict['capacity staal buigen'], 'Nan' ],
-                        ['capacity staal koppelen', 'Deterministic', 'no', settingdistibution_dict['capacity staal koppelen'], 'Nan'],
-                        ['capacity omhulsel maken', 'Deterministic', 'no', settingdistibution_dict['capacity omhulsel maken'], 'Nan'],
-                        ['Component Safety Stock gebogen stangen', 'Deterministic', 'no',settingdistibution_dict['SS gebogen stangen'], 'Nan'],
-                        ['Component Safety Stock gekoppeld eenpersoons', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld eenpersoons'], 'Nan'],
-                        ['Component Safety Stock gekoppeld twijfelaar', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld twijfelaar'], 'Nan'],
-                        ['Component Safety Stock gekoppeld queensize', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld queensize'], 'Nan'],
-                        ['Component Safety Stock gekoppeld kingsize', 'Deterministic', 'no',settingdistibution_dict[ 'SS gekoppeld kingsize'], 'Nan'],
-                        ['supply time stalen stangen', 'normal', 'no',settingdistibution_dict['mean supply time stalen stangen'],settingdistibution_dict['stdev supply time stalen stangen'] ],
-                        ['supply time koppeldraad', 'normal', 'no',settingdistibution_dict['mean supply time koppeldraad'],settingdistibution_dict['stdev supply time koppeldraad']],
-                        ['supply time stuffing', 'normal', 'no',settingdistibution_dict['mean supply time stuffing'],settingdistibution_dict['stdev supply time stuffing']],
-                        ['supply quantity error (%stdev)', 'normal', 'no','Same as ordered quantity',settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']],
-                        ['new order deadlines', 'normal', 'no',settingdistibution_dict['mean deadline order'],settingdistibution_dict[ 'stdev deadline order' ] ],
+    tablecontent = [
                         ]
     fig_table_speelveld = go.Figure(data=[go.Table(
         header=dict(values=headercontent,
@@ -291,6 +321,87 @@ def make_fig_speelveldprocessschakels(settingdistibution_dict):
                                      )
 
     return fig_table_speelveldprocessschakels
+
+def make_fig_speelveldbreakdowns(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['tijd tot nieuwe breakdown staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown omhulsel maken', 'Exponential', 'no', settingdistibution_dict['mean omhulsel maken breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal buigen', 'Exponential', 'no', settingdistibution_dict['mean fix staal buigen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean fix staal koppelen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen omhulsel maken', 'Exponential', 'no',settingdistibution_dict['mean fix omhulsel maken breakdown'] , 'Nan'],
+                        ]
+    fig_table_speelveldbreakdowns = go.Figure(data=[go.Table(
+                                        header=dict(values=headercontent,
+                                                    line_color='darkslategray',
+                                                    fill_color='lightskyblue',
+                                                    align='left'),
+                                        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
+                                                   line_color='darkslategray',
+                                                   fill_color='lightcyan',
+                                                   align='left')),
+                                        ],
+                                   layout_width = 500
+                                     )
+
+    return fig_table_speelveldbreakdowns
+
+def make_fig_speelveldorders(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['aankomst nieuwe orders', 'Exponential', 'no', settingdistibution_dict['order time mean'], 'Nan'],
+                        ['order grootte nieuwe orders', 'Normal', 'no',settingdistibution_dict['order size mean'],settingdistibution_dict['order size stdev'] ],
+                        ['new order deadlines', 'normal', 'no', settingdistibution_dict['mean deadline order'],settingdistibution_dict['stdev deadline order']],
+                        ]
+    fig_table_speelveldorders = go.Figure(data=[go.Table(
+                                        header=dict(values=headercontent,
+                                                    line_color='darkslategray',
+                                                    fill_color='lightskyblue',
+                                                    align='left'),
+                                        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
+                                                   line_color='darkslategray',
+                                                   fill_color='lightcyan',
+                                                   align='left')),
+                                        ],
+                                   layout_width = 500
+                                     )
+
+    return fig_table_speelveldorders
+
+def make_fig_speelveldsupply(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [[ 'reorder per tijdunits', 'Deterministic', 'no',settingdistibution_dict['supply interval order'] , 'Nan'],
+                        ['reorder up to point stalen stangen', 'Deterministic', 'no',settingdistibution_dict['reorder upto stalen stangen'], 'Nan'],
+                        ['reorder up to point koppeldraad', 'Deterministic', 'no',settingdistibution_dict['reorder upto koppeldraad'], 'Nan'],
+                        ['reorder up to point soft stuffing', 'Deterministic', 'no',settingdistibution_dict['reorder upto soft stuffing'], 'Nan'],
+                        ['reorder up to point medium stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto medium stuffing'], 'Nan'],
+                        ['reorder up to point hard stuffing', 'Deterministic', 'no', settingdistibution_dict['reorder upto hard stuffing'], 'Nan'],
+                        ['Component Safety Stock gebogen stangen', 'Deterministic', 'no',settingdistibution_dict['SS gebogen stangen'], 'Nan'],
+                        ['Component Safety Stock gekoppeld eenpersoons', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld eenpersoons'], 'Nan'],
+                        ['Component Safety Stock gekoppeld twijfelaar', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld twijfelaar'], 'Nan'],
+                        ['Component Safety Stock gekoppeld queensize', 'Deterministic', 'no',settingdistibution_dict['SS gekoppeld queensize'], 'Nan'],
+                        ['Component Safety Stock gekoppeld kingsize', 'Deterministic', 'no',settingdistibution_dict[ 'SS gekoppeld kingsize'], 'Nan'],
+                        ['supply time stalen stangen', 'normal', 'no',settingdistibution_dict['mean supply time stalen stangen'],settingdistibution_dict['stdev supply time stalen stangen'] ],
+                        ['supply time koppeldraad', 'normal', 'no',settingdistibution_dict['mean supply time koppeldraad'],settingdistibution_dict['stdev supply time koppeldraad']],
+                        ['supply time stuffing', 'normal', 'no',settingdistibution_dict['mean supply time stuffing'],settingdistibution_dict['stdev supply time stuffing']],
+                        ['supply quantity error (%stdev)', 'normal', 'no','Same as ordered quantity',settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']],
+                        ]
+    fig_table_speelveldsupply = go.Figure(data=[go.Table(
+                                        header=dict(values=headercontent,
+                                                    line_color='darkslategray',
+                                                    fill_color='lightskyblue',
+                                                    align='left'),
+                                        cells=dict(values= [[tablecontent[i][j] for i in range(len(tablecontent))]  for j in range(len(headercontent))  ] ,
+                                                   line_color='darkslategray',
+                                                   fill_color='lightcyan',
+                                                   align='left')),
+                                        ],
+                                   layout_width = 500
+                                     )
+
+    return fig_table_speelveldsupply
 
 def make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles):
     fig_VSM_statistics = go.Figure(data=[go.Table(

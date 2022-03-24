@@ -134,11 +134,15 @@ def runsimulation(settingdistibution_dict):
 
     finished_orders_df['total queue time'] = [finished_orders_df['tijd inventory staal buigen'][i] + finished_orders_df['tijd inventory staal koppelen'][i] + finished_orders_df['tijd inventory omhulsel maken'][i] for i in range(len(finished_orders_df))]
 
+    finished_orders_df['total producing time'] = [finished_orders_df['tijd staal buigen'][i] + finished_orders_df['tijd staal koppelen'][i] + finished_orders_df['tijd omhulsel maken'][i] for i in range(len(finished_orders_df))]
+
+    finished_orders_df['lateness'] = [max(finished_orders_df['finish time'][i] - finished_orders_df['deadline order'][i],0) for i in range(len(finished_orders_df))]
+
     means = {'total process time': finished_orders_df['total process time'].mean(), 'total queue time': finished_orders_df['total queue time'].mean(), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].mean(), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].mean(),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].mean(),
-             'staal buigen': finished_orders_df['tijd staal buigen'].mean(), 'staal koppelen': finished_orders_df['tijd staal koppelen'].mean(), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].mean()}
+             'staal buigen': finished_orders_df['tijd staal buigen'].mean(), 'staal koppelen': finished_orders_df['tijd staal koppelen'].mean(), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].mean(), 'total producing time': finished_orders_df['total producing time'].mean(), 'lateness': finished_orders_df['lateness'].mean()}
 
     lower_5_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.05), 'total queue time': finished_orders_df['total queue time'].quantile(.05), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].quantile(.05), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].quantile(.05),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.05),
-             'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.05), 'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.05), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.05)}
+             'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.05), 'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.05), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.05), 'total producing time': finished_orders_df['total producing time'].quantile(.05), 'lateness': finished_orders_df['lateness'].quantile(.05)}
 
     upper_95_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.95),
                          'total queue time': finished_orders_df['total queue time'].quantile(.95),
@@ -147,7 +151,9 @@ def runsimulation(settingdistibution_dict):
                          'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.95),
                          'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.95),
                          'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.95),
-                         'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.95)}
+                         'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.95),
+                         'total producing time': finished_orders_df['total producing time'].quantile(.95),
+                         'lateness': finished_orders_df['lateness'].quantile(.95)}
 
     #########
     # Make dataframe of all finished orders

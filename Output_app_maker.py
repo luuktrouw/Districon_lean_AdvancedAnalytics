@@ -29,12 +29,12 @@ sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=
 fig_some_order = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
 
 fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(finished_orders_df, 20)
-
-fig_order_deadlines_met = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df)
-
-testt = finished_orders_df[finished_orders_df['high priority'] == True]
-if len(testt)>0:
-    figorderdeadlinesmet_priority = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df[finished_orders_df['high priority'] == True])
+#
+# fig_order_deadlines_met = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df)
+#
+# testt = finished_orders_df[finished_orders_df['high priority'] == True]
+# if len(testt)>0:
+#     figorderdeadlinesmet_priority = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df[finished_orders_df['high priority'] == True])
 
 
 fig_stocklevels = plottingfunctions.plot_stocklevels_through_time(measures['stock levels']['raw materials']['stalen stangen'])
@@ -44,9 +44,13 @@ fig_VSM_statistics = plottingfunctions.make_fig_VSM_statistics(means, lower_5_qu
 ## ----------------------------------------------
 ## MAKE APP
 
-app = dash.Dash(__name__)
+#app = dash.Dash(__name__)
 
+external_stylesheets = [dbc.themes.BOOTSTRAP]
 
+app = dash.Dash(__name__,
+                external_stylesheets=external_stylesheets
+                )
 
 # app.layout = html.Div([
 #             dbc.Row( dbc.Col(html.H1("Simulation results with the given settings", style={'text-align':'center'}),
