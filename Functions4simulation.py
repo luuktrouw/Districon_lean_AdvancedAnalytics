@@ -33,7 +33,7 @@ def event_neworder(instance, settingdistibution_dict):
                 #if i == 0:
 
                 break
-
+            instance.inventories[2].append([math.inf, ordersize, orderdict])
     orderdict['start tijd inventory omhulsel maken'] = instance.tijd
     instance = Functions_start_process_steps.start_process_omhulsel_maken(instance, settingdistibution_dict)
 
@@ -43,10 +43,12 @@ def event_neworder(instance, settingdistibution_dict):
         for i in range(len(instance.inventories[1])):
             if instance.inventories[1][i][2]['high priority'] == False:
                 instance.inventories[1].insert(i, [math.inf, ordersize, orderdict])
+
                 # if it is the first in queue, dan kan het zijn dat deze kan met supply, waardoor er dus geen supply  shortage is voor even
                 # dit zou resulteren in eventjes 0 seconde geen shortage supply voor die order, als je dat wil oplossen moet dat hier
 
                 break
+            instance.inventories[1].append([math.inf, ordersize, orderdict])
     orderdict['start tijd inventory staal koppelen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_koppelen(instance, settingdistibution_dict)
 
@@ -60,6 +62,7 @@ def event_neworder(instance, settingdistibution_dict):
                 # dit zou resulteren in eventjes 0 seconde geen shortage supply voor die order, als je dat wil oplossen moet dat hier
 
                 break
+            instance.inventories[0].append([math.inf, ordersize, orderdict])
     orderdict['start tijd inventory staal buigen'] = instance.tijd
     instance = Functions_start_process_steps.start_process_staal_buigen(instance, settingdistibution_dict)
 

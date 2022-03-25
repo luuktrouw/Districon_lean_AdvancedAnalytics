@@ -184,13 +184,14 @@ def get_pagelayout_leadtimes():
                               {'label': 'Queueing time staal buigen', 'value': 3},{'label': 'Queueing time staal koppelen', 'value': 4},{'label': 'Queueing time omhulsel maken', 'value': 5}], multi = False,
                             value = 1,)
 
-    dropdown_schakel_waittimes = dcc.Dropdown(id = 'select schakel waittimes', options = [{'label': 'Total process', 'value': 1},{'label': 'Staal buigen', 'value': 2},
-                              {'label': 'Staal koppelen', 'value': 3},{'label': 'Omhulsel maken', 'value': 4}], multi = False,
-                            value = 1,)
+    dropdown_schakel_waittimes = dcc.Dropdown(id = 'select schakel waittimes', options = [{'label': 'Total process', 'value': 'total process'},{'label': 'Staal buigen', 'value': 'staal buigen'},
+                              {'label': 'Staal koppelen', 'value': 'staal koppelen'},{'label': 'Omhulsel maken', 'value': 'omhulsel maken'}], multi = False,
+                            value = 'staal buigen',)
 
     row1_leadtimes = dbc.Row(
         [
-            dcc.Graph(id='VSMstatistics', figure=plottingfunctions.make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles))
+            #dcc.Graph(id='VSMstatistics', figure=plottingfunctions.make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles))
+            dcc.Graph(id='VSMstatistics', figure=plottingfunctions.make_violin_VSM_statistics(finished_orders_df))
         ]
     )
 

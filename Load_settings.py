@@ -19,7 +19,7 @@ def load_settings():
     stdev_order_deadline = 30
 
     # high priority chance
-    high_priority_chance = 0.001
+    high_priority_chance = 0.01
 
     # supply (manual stock level determined)
     supply_order_interval_time = 24000
@@ -72,11 +72,11 @@ def load_settings():
     # SS_gekoppeld_kingsize = 10
 
     # Manual safety stocks sub assemblies
-    SS_gebogen_stangen = 75
-    SS_gekoppeld_eenpersoons = 10
-    SS_gekoppeld_twijfelaar = 10
-    SS_gekoppeld_queensize = 10
-    SS_gekoppeld_kingsize = 10
+    SS_gebogen_stangen =0
+    SS_gekoppeld_eenpersoons = 0
+    SS_gekoppeld_twijfelaar = 0
+    SS_gekoppeld_queensize = 0
+    SS_gekoppeld_kingsize = 0
 
     # wanted succes rate
     wantedsuccesrate = 0.7

@@ -39,7 +39,12 @@ def runsimulation(settingdistibution_dict):
             initdict2 = {}
             initdict3 = {}
             self.work_state= [[0,0], [0,0], [0,0]]
-            self.materialstate = [{'stalen stangen': 250},{'koppeldraad': 250},{'soft stuffing': 250, 'medium stuffing': 250,'hard stuffing': 250}]
+            self.materialstate = [{'stalen stangen': settingdistibution_dict['reorder upto stalen stangen']},
+                                  {'koppeldraad':settingdistibution_dict['reorder upto koppeldraad']},
+                                  {'soft stuffing': settingdistibution_dict['reorder upto soft stuffing'],
+                                   'medium stuffing': settingdistibution_dict['reorder upto medium stuffing'],
+                                   'hard stuffing': settingdistibution_dict['reorder upto hard stuffing']}
+                                  ]
             self.stockstate_subassemblies = [{},{'gebogen stangen':settingdistibution_dict['SS gebogen stangen']},
                                                 {'gekoppeld eenpersoons': settingdistibution_dict['SS gekoppeld eenpersoons'],
                                                  'gekoppeld twijfelaar': settingdistibution_dict['SS gekoppeld twijfelaar'],
@@ -107,6 +112,7 @@ def runsimulation(settingdistibution_dict):
         eventcounter = 0
 
         instance = instancezero()
+        instance.tijd
 
         curtimeinterval = 4800000
         timeinterval = 4800000
@@ -124,7 +130,7 @@ def runsimulation(settingdistibution_dict):
 
             eventcounter += 1
 
-    # close the distruption measures
+    # close the disruption measures
     instance.measures = Functions.close_disruption_measures(instance.measures, instance.tijd)
 
     #########
@@ -132,8 +138,20 @@ def runsimulation(settingdistibution_dict):
     #########
     finished_orders_df = pd.DataFrame(instance.finishedorders)
 
+    for i in range(len(finished_orders_df)):
+        if i not in finished_orders_df.index:
+            print('hoiiiiii')
+            print(len(finished_orders_df))
+            print(i)
+
     #sommige disruptions kunnen nog niet gesloten zijn, bijvoorbeeld als de order al wel klaar is (omhulsel maken klaar), maar nog niet staal buigen ding heeft afgerond en dan stopt de tijd plots. dam telt t niet als helemaal klaar, dus verwijder uit finished orders
     finished_orders_df = Functions.delete_nonfinished_orders_disruptions(finished_orders_df)
+
+    for i in range(len(finished_orders_df)):
+        if i not in finished_orders_df.index:
+            print('hoi')
+            print(len(finished_orders_df))
+            print(i)
 
     finished_orders_df['total queue time'] = [finished_orders_df['tijd inventory staal buigen'][i] + finished_orders_df['tijd inventory staal koppelen'][i] + finished_orders_df['tijd inventory omhulsel maken'][i] for i in range(len(finished_orders_df))]
 
@@ -170,7 +188,7 @@ def runsimulation(settingdistibution_dict):
 
     fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
 
-
+    ffiiiff = plottingfunctions.make_violin_VSM_statistics(finished_orders_df)
     return finished_orders_df, instance.measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, instance.tijd
 
 

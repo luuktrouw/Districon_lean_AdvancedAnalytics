@@ -84,7 +84,19 @@ def calculateSafetyStocks(setting_dict):
 
 
     #determine for normal distributed processes the needed value of SS
-    SSstaalbuigen = (setting_dict['mean staal buigen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal buigen time'])/RHSstaalbuigen
-    setting_dict['reorder upto stalen stangenn'] = SSstaalbuigen
+    SSstalenstangen = (setting_dict['mean staal buigen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal buigen time'])/RHSstaalbuigen
+    setting_dict['reorder upto stalen stangen'] = int(SSstalenstangen)
+
+    SSkoppeldraad = (setting_dict['mean staal koppelen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal koppelen time'])/RHSstaalkoppelen
+    setting_dict['reorder upto koppeldraad'] = int(SSkoppeldraad)
+
+    SSsoftstuffing = (setting_dict['mean omhulsel maken time'] + stdnormalinvcdfvalue*setting_dict['stdev omhulsel maken time'])/RHSsoftstuffuing
+    setting_dict['reorder upto soft stuffing'] = int(SSsoftstuffing)
+
+    SSmediumstuffing = (setting_dict['mean omhulsel maken time'] + stdnormalinvcdfvalue*setting_dict['stdev omhulsel maken time'])/RHSmediumstuffuing
+    setting_dict['reorder upto medium stuffing'] = int(SSmediumstuffing)
+
+    SShardstuffing = (setting_dict['mean omhulsel maken time'] + stdnormalinvcdfvalue*setting_dict['stdev omhulsel maken time'])/RHShardstuffuing
+    setting_dict['reorder upto hard stuffing'] = int(SShardstuffing)
 
     return setting_dict

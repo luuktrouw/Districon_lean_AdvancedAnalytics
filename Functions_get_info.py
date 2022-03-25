@@ -67,6 +67,7 @@ def get_length_neworder(Mean_ordertime, stdev_ordersize):
 
 def get_length_staal_buigen(Mean_process0time, stdev_process0time):
     tijd = round(np.random.normal(Mean_process0time, stdev_process0time), 1)
+
     #tijd = round(np.random.exponential(Mean_process0time), 1)
     #print('new time schakel 0: ', tijd)
     return tijd

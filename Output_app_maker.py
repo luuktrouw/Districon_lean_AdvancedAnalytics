@@ -18,6 +18,7 @@ import Load_settings
 
 settingdistibution_dict = Load_settings.load_settings()
 
+#### deze functie gebruikt handmatig ingevoerde getallen voor bill of materials
 settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
 
 ##------------------------------------

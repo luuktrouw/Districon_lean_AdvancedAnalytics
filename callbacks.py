@@ -53,6 +53,13 @@ def get_callbacks(app):
         figure = plottingfunctions.plot_fractions_wait_time_reasons(sortfinisheddf, option_slctd)
         return figure
 
+    @app.callback(Output(component_id='schakel wait times', component_property='figure'),
+                  [Input(component_id='select schakel waittimes', component_property='value')])
+    def update_single_order_graph(option_slctd):
+        # if text in finished_orders_df['orderID']:
+        figure = plottingfunctions.plot_fractions_wait_time_reasons_perschakel(sortfinisheddf, 100, option_slctd)
+        return figure
+
     # @app.callback(Output(component_id= 'stock level graph', component_property= 'figure'),
     #               [Input(component_id='select stock graph', component_property= 'value')])
     # def update_stocklevelsgraph(option_slctd):
