@@ -35,10 +35,10 @@ def load_settings():
 
     # suggested reorder up to point of raw materials
     reorder_upto_point_stalenstangen = 750
-    reorder_upto_point_koppeldraad = 750
-    reorder_upto_point_softstuffing = 100
-    reorder_upto_point_mediumstuffing = 100
-    reorder_upto_point_hardstuffing = 100
+    reorder_upto_point_koppeldraad = 325
+    reorder_upto_point_softstuffing = 50
+    reorder_upto_point_mediumstuffing = 50
+    reorder_upto_point_hardstuffing = 50
 
     # # manual reorder up to point of raw materials
     # reorder_upto_point_stalenstangen = 1700
@@ -72,17 +72,14 @@ def load_settings():
     # SS_gekoppeld_kingsize = 10
 
     # Manual safety stocks sub assemblies
-    SS_gebogen_stangen =0
-    SS_gekoppeld_eenpersoons = 0
-    SS_gekoppeld_twijfelaar = 0
-    SS_gekoppeld_queensize = 0
-    SS_gekoppeld_kingsize = 0
+    SS_gebogen_stangen = 100
+    SS_gekoppeld_eenpersoons = 10
+    SS_gekoppeld_twijfelaar = 10
+    SS_gekoppeld_queensize = 10
+    SS_gekoppeld_kingsize = 10
 
     # wanted succes rate
-    wantedsuccesrate = 0.7
-
-    # calculated guess safety stocks all stock levels
-    # SS_gebogen_stangen, SS_gekoppeld_eenpersoons, SS_gekoppeld_twijfelaar, SS_gekoppeld_queensize, SS_gekoppeld_kingsize = 10
+    wantedsuccesrate = 0.9
 
     settingdistibution_dict = {'order time mean': Mean_ordertime, 'order time stdev': stdev_ordertime,
                                'order size mean': Mean_ordersize, 'order size stdev': stdev_ordersize,
@@ -125,6 +122,6 @@ def load_settings():
                                'wanted succes rate': wantedsuccesrate,
                                }
 
-    settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
+    #settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
 
     return settingdistibution_dict

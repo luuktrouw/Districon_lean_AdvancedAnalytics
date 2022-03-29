@@ -82,7 +82,6 @@ def calculateSafetyStocks(setting_dict):
     #voor normal distributions calculate the standard inverse cdf for the needed percentage
     stdnormalinvcdfvalue = statistics.NormalDist().inv_cdf(setting_dict['wanted succes rate'])
 
-
     #determine for normal distributed processes the needed value of SS
     SSstalenstangen = (setting_dict['mean staal buigen time'] + stdnormalinvcdfvalue*setting_dict['stdev staal buigen time'])/RHSstaalbuigen
     setting_dict['reorder upto stalen stangen'] = int(SSstalenstangen)

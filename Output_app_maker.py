@@ -16,21 +16,21 @@ import Load_settings
 
 #https://www.youtube.com/watch?v=hSPmj7mK6ng
 
-settingdistibution_dict = Load_settings.load_settings()
+#settingdistibution_dict = Load_settings.load_settings()
 
 #### deze functie gebruikt handmatig ingevoerde getallen voor bill of materials
-settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
+#settingdistibution_dict = Functions.calculateSafetyStocks(settingdistibution_dict)
 
 ##------------------------------------
 ### LOAD FIGURES
 
 
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
+#finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
 
-sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
-fig_some_order = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
+#sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+#fig_some_order = plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
 
-fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(finished_orders_df, 20)
+#fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons(finished_orders_df, 20)
 #
 # fig_order_deadlines_met = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df)
 #
@@ -39,9 +39,9 @@ fig_pie_chart_reasons_queue = plottingfunctions.plot_fractions_wait_time_reasons
 #     figorderdeadlinesmet_priority = plottingfunctions.plot_fraction_deadlines_met(finished_orders_df[finished_orders_df['high priority'] == True])
 
 
-fig_stocklevels = plottingfunctions.plot_stocklevels_through_time(measures['stock levels']['raw materials']['stalen stangen'])
+#fig_stocklevels = plottingfunctions.plot_stocklevels_through_time(measures['stock levels']['raw materials']['stalen stangen'])
 
-fig_VSM_statistics = plottingfunctions.make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles)
+#fig_VSM_statistics = plottingfunctions.make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles)
 
 ## ----------------------------------------------
 ## MAKE APP

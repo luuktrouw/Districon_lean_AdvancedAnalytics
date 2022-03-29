@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.express as px
 import datetime
 import plotly.graph_objects as go
-from dash import Input, Output, State, html, dcc
+from dash import Input, Output, State, html, dcc, dash_table
 import dash_bootstrap_components as dbc
 
 
@@ -426,6 +426,85 @@ def make_fig_speelveldsupply(settingdistibution_dict):
 
     return fig_table_speelveldsupply
 
+def make_fig_editablespeelveldsupply(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [
+        ['reorder per tijdunits', 'Deterministic', 'no', settingdistibution_dict['supply interval order'], 'Nan'],
+        ['reorder up to point stalen stangen', 'Deterministic', 'no',
+         settingdistibution_dict['reorder upto stalen stangen'], 'Nan'],
+        ['reorder up to point koppeldraad', 'Deterministic', 'no', settingdistibution_dict['reorder upto koppeldraad'],
+         'Nan'],
+        ['reorder up to point soft stuffing', 'Deterministic', 'no',
+         settingdistibution_dict['reorder upto soft stuffing'], 'Nan'],
+        ['reorder up to point medium stuffing', 'Deterministic', 'no',
+         settingdistibution_dict['reorder upto medium stuffing'], 'Nan'],
+        ['reorder up to point hard stuffing', 'Deterministic', 'no',
+         settingdistibution_dict['reorder upto hard stuffing'], 'Nan'],
+        ['Component Safety Stock gebogen stangen', 'Deterministic', 'no', settingdistibution_dict['SS gebogen stangen'],
+         'Nan'],
+        ['Component Safety Stock gekoppeld eenpersoons', 'Deterministic', 'no',
+         settingdistibution_dict['SS gekoppeld eenpersoons'], 'Nan'],
+        ['Component Safety Stock gekoppeld twijfelaar', 'Deterministic', 'no',
+         settingdistibution_dict['SS gekoppeld twijfelaar'], 'Nan'],
+        ['Component Safety Stock gekoppeld queensize', 'Deterministic', 'no',
+         settingdistibution_dict['SS gekoppeld queensize'], 'Nan'],
+        ['Component Safety Stock gekoppeld kingsize', 'Deterministic', 'no',
+         settingdistibution_dict['SS gekoppeld kingsize'], 'Nan'],
+        ['supply time stalen stangen', 'normal', 'no', settingdistibution_dict['mean supply time stalen stangen'],
+         settingdistibution_dict['stdev supply time stalen stangen']],
+        ['supply time koppeldraad', 'normal', 'no', settingdistibution_dict['mean supply time koppeldraad'],
+         settingdistibution_dict['stdev supply time koppeldraad']],
+        ['supply time stuffing', 'normal', 'no', settingdistibution_dict['mean supply time stuffing'],
+         settingdistibution_dict['stdev supply time stuffing']],
+        ['supply quantity error (%stdev)', 'normal', 'no', 'Same as ordered quantity',
+         settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']],
+        ]
+
+    fig_table_speelveldsupply = dash_table.DataTable(id = 'settingssupply',
+                                                     columns = [{'name': headercontent[i], 'id': headercontent[i]} for i in range(len(headercontent))],
+                                                     data = [{headercontent[j]: tablecontent[i][j]
+                                                              for j in range(len(tablecontent[i]))}
+                                                             for i in range(len(tablecontent))],
+                                                     editable = True,
+                                                     style_cell={'textAlign': 'left',
+                                                                 'font-family':'sans-serif'},
+                                                     style_data={
+                                                         'color': 'black',
+                                                         'backgroundColor': 'white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto',
+                                                     },
+                                                     style_header={
+                                                         'backgroundColor': 'rgb(210, 210, 210)',
+                                                         'color': 'black',
+                                                         'fontWeight': 'bold',
+                                                         'textAlign': 'left'
+                                                     },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'row_index': 'odd'},
+                                                             'backgroundColor': 'rgb(220, 220, 220)',
+                                                         }
+                                                     ],
+                                                     page_size=6
+                                                     )
+
+    # fig_table_speelveldsupply = go.Figure(data=[go.Table(
+    #     header=dict(values=headercontent,
+    #                 line_color='darkslategray',
+    #                 fill_color='lightskyblue',
+    #                 align='left'),
+    #     cells=dict(values=[[tablecontent[i][j] for i in range(len(tablecontent))] for j in range(len(headercontent))],
+    #                line_color='darkslategray',
+    #                fill_color='lightcyan',
+    #                align='left')),
+    # ],
+    #     layout_width=500
+    # )
+
+    return fig_table_speelveldsupply
+
 def make_barchart_disruptionfracs(measures, totaltijd):
 
     totalbreakdowntimestaalbuigen = 0
@@ -515,11 +594,19 @@ def make_violin_VSM_statistics(finished_order_df):
 
     fig = go.Figure()
 
+    #### violin below
     for stepname in Step_names:
         fig.add_trace(go.Violin(x=finished_order_df[stepname],
                                 name=stepname,
                                 box_visible=True,
                                 meanline_visible=True))
+
+    #### boxplot below
+    # for stepname in Step_names:
+    #     fig.add_trace(go.Box(x=finished_order_df[stepname],
+    #                             name=stepname,
+    #                             #meanline_visible=True,
+    #                          ))
 
     return fig
 

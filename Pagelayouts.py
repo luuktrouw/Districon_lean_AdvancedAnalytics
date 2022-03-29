@@ -101,35 +101,41 @@ def get_pagelayout_settings():
 
     table_orders =  plottingfunctions.make_fig_speelveldorders(settingdistibution_dict)
 
-    table_suppliers =  plottingfunctions.make_fig_speelveldsupply(settingdistibution_dict)
+    #editable_suppliers =  plottingfunctions.make_fig_speelveldsupply(settingdistibution_dict)
+    editable_suppliers =  plottingfunctions.make_fig_editablespeelveldsupply(settingdistibution_dict)
 
-    row1_settings = dbc.Row(
-        [
-            dbc.Col([
-                    html.H5("speelveld process schakels", style={'text-align': 'center'}),
-                    dcc.Graph(id='speelveld process schakels', figure=table_processschakels)
-                    ]),
-            dbc.Col([
-                    html.H5("speelveld breakdowns", style={'text-align': 'center'}),
-                    dcc.Graph(id='speelveld breakdowns', figure=table_breakdowns)
-                    ]  ),
-        ]
+    resim_button = html.Div(
+        dbc.Button("RESIMULATE", color="primary"),
     )
 
     row2_settings = dbc.Row(
         [
             dbc.Col([
-                html.H5("speelveld orders", style={'text-align': 'center'}),
-                dcc.Graph(id='speelveld orders', figure=table_orders)
-            ]),
+                    html.H5("speelveld process schakels", style={'text-align': 'center'}),
+                    dcc.Graph(id='speelveld process schakels', figure=table_processschakels)
+                    ], width={"size": 6, "offset": 0}),
             dbc.Col([
-                html.H5("speelveld suppliers", style={'text-align': 'center'}),
-                dcc.Graph(id='speelveld suppliers', figure=table_suppliers)
-            ]),
+                    html.H5("speelveld breakdowns", style={'text-align': 'center'}),
+                    dcc.Graph(id='speelveld breakdowns', figure=table_breakdowns)
+                    ],width={"size": 6, "offset": 0}),
         ]
     )
 
-    page_settings = html.Div([navbar, headline, row1_settings,  row2_settings, ])
+    row3_settings = dbc.Row(
+        [
+            dbc.Col([
+                html.H5("speelveld orders", style={'text-align': 'center'}),
+                dcc.Graph(id='speelveld orders', figure=table_orders)
+                ],width={"size": 6, "offset":0}),
+            dbc.Col([
+                html.H5("speelveld suppliers", style={'text-align': 'center'}),
+                #dcc.Graph(id='speelveld suppliers', figure=table_suppliers),
+                editable_suppliers
+                ],width={"size": 6, "offset": 0}),
+        ]
+    )
+
+    page_settings = html.Div([navbar, headline,resim_button, row2_settings,row3_settings])
     return page_settings
 
 def get_pagelayout_inventory():
