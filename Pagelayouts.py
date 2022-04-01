@@ -14,11 +14,6 @@ import main_simulation
 import plottingfunctions
 import Load_settings
 
-settingdistibution_dict = Load_settings.load_settings()
-
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
-sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
-
 navbar = dbc.NavbarSimple(
         children=[
             dbc.NavItem(dbc.NavLink("Managerial summary", href="Manager")),
@@ -30,7 +25,7 @@ navbar = dbc.NavbarSimple(
         color="primary"
     )
 
-def get_pagelayout_manager():
+def get_pagelayout_manager(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
     headline = html.H1("Managerial Summary", style={'text-align': 'center'})
 
     percdeadlinemade = plottingfunctions.get_perc_deadlines_met(finished_orders_df)
@@ -92,31 +87,33 @@ def get_pagelayout_manager():
     page_manager = html.Div([navbar,headline, row1_manager,  row2_manager, ])
     return page_manager
 
-def get_pagelayout_settings():
+def get_pagelayout_settings(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
     headline = html.H1("Settings", style={'text-align': 'center'})
 
-    table_processschakels = plottingfunctions.make_fig_speelveldprocessschakels(settingdistibution_dict)
+    editable_processschakels = plottingfunctions.make_fig_editablespeelveldprocessschakels(settingdistibution_dict)
 
-    table_breakdowns = plottingfunctions.make_fig_speelveldbreakdowns(settingdistibution_dict)
+    editable_breakdowns = plottingfunctions.make_fig_editablespeelveldbreakdowns(settingdistibution_dict)
 
-    table_orders =  plottingfunctions.make_fig_speelveldorders(settingdistibution_dict)
+    editable_orders =  plottingfunctions.make_fig_editablespeelveldorders(settingdistibution_dict)
 
     #editable_suppliers =  plottingfunctions.make_fig_speelveldsupply(settingdistibution_dict)
     editable_suppliers =  plottingfunctions.make_fig_editablespeelveldsupply(settingdistibution_dict)
 
     resim_button = html.Div(
-        dbc.Button("RESIMULATE", color="primary"),
+        dbc.Button("RESIMULATE", color="primary", id = 'resimulate button', n_clicks=0),
     )
 
     row2_settings = dbc.Row(
         [
             dbc.Col([
                     html.H5("speelveld process schakels", style={'text-align': 'center'}),
-                    dcc.Graph(id='speelveld process schakels', figure=table_processschakels)
+                    #dcc.Graph(id='speelveld process schakels', figure=editable_processschakels)
+                    editable_processschakels
                     ], width={"size": 6, "offset": 0}),
             dbc.Col([
                     html.H5("speelveld breakdowns", style={'text-align': 'center'}),
-                    dcc.Graph(id='speelveld breakdowns', figure=table_breakdowns)
+                    #dcc.Graph(id='speelveld breakdowns', figure=editable_breakdowns)
+                    editable_breakdowns
                     ],width={"size": 6, "offset": 0}),
         ]
     )
@@ -125,7 +122,8 @@ def get_pagelayout_settings():
         [
             dbc.Col([
                 html.H5("speelveld orders", style={'text-align': 'center'}),
-                dcc.Graph(id='speelveld orders', figure=table_orders)
+                #dcc.Graph(id='speelveld orders', figure=editable_orders)
+                editable_orders
                 ],width={"size": 6, "offset":0}),
             dbc.Col([
                 html.H5("speelveld suppliers", style={'text-align': 'center'}),
@@ -138,7 +136,7 @@ def get_pagelayout_settings():
     page_settings = html.Div([navbar, headline,resim_button, row2_settings,row3_settings])
     return page_settings
 
-def get_pagelayout_inventory():
+def get_pagelayout_inventory(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
     headline = html.H1("Inventory results", style={'text-align': 'center'})
 
     dropdown_materials = dcc.Dropdown(id='select stock graph', options=[{'label': 'raw material - stalen stangen', 'value': ['raw materials','stalen stangen']},
@@ -183,7 +181,7 @@ def get_pagelayout_inventory():
 
     return page_inventory
 
-def get_pagelayout_leadtimes():
+def get_pagelayout_leadtimes(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
     headline = html.H1("Lead and wait time results", style={'text-align': 'center'})
 
     dropdown_schakel_leadtimes = dcc.Dropdown(id = 'select measure', options = [{'label': 'Total throughout time', 'value': 1},{'label': 'Total queueing time', 'value': 2},
@@ -241,15 +239,16 @@ def get_pagelayout_leadtimes():
     page_leadtimes = html.Div([navbar, headline, row1_leadtimes, row2_leadtimes,row3_leadtimes, ])
     return page_leadtimes
 
-def get_pagelayouts(settingdistibution_dict):
+def get_pagelayouts(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
 
-    page_manager = get_pagelayout_manager()
+    page_manager = get_pagelayout_manager(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
 
-    page_settings = get_pagelayout_settings()
+    page_settings = get_pagelayout_settings(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
 
-    page_inventory = get_pagelayout_inventory()
+    page_inventory = get_pagelayout_inventory(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
 
-    page_leadtimes = get_pagelayout_leadtimes()
+    #page_leadtimes = get_pagelayout_leadtimes(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
+    page_leadtimes = get_pagelayout_inventory(settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
 
     return page_manager, page_settings, page_inventory, page_leadtimes
 

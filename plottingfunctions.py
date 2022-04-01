@@ -260,6 +260,7 @@ def get_cardtotalthroughput_time(means, lower_5_quantiles, upper_95_quantiles):
                 html.P(quantiles),
             ]
         ),
+
     ]
 
     return cardthrougputtime
@@ -345,6 +346,48 @@ def make_fig_speelveldprocessschakels(settingdistibution_dict):
 
     return fig_table_speelveldprocessschakels
 
+def make_fig_editablespeelveldprocessschakels(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['doorlooptijd staal buigen', 'Normal', 'no', settingdistibution_dict['mean staal buigen time'], settingdistibution_dict['stdev staal buigen time']],
+                        ['doorlooptijd staal koppelen', 'Normal', 'no', settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time']],
+                        ['doorlooptijd omhulsel maken', 'Normal', 'no', settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time']],
+                        ['capacity staal buigen', 'Deterministic', 'no',settingdistibution_dict['capacity staal buigen'], 'Nan' ],
+                        ['capacity staal koppelen', 'Deterministic', 'no', settingdistibution_dict['capacity staal koppelen'], 'Nan'],
+                        ['capacity omhulsel maken', 'Deterministic', 'no', settingdistibution_dict['capacity omhulsel maken'], 'Nan'],
+                        ]
+
+    fig_table_speelveldprocessschakels = dash_table.DataTable(id = 'settingsprocessschakels',
+                                                     columns = [{'name': headercontent[i], 'id': headercontent[i]} for i in range(len(headercontent))],
+                                                     data = [{headercontent[j]: tablecontent[i][j]
+                                                              for j in range(len(tablecontent[i]))}
+                                                             for i in range(len(tablecontent))],
+                                                     editable = True,
+                                                     style_cell={'textAlign': 'left',
+                                                                 'font-family':'sans-serif'},
+                                                     style_data={
+                                                         'color': 'black',
+                                                         'backgroundColor': 'white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto',
+                                                     },
+                                                     style_header={
+                                                         'backgroundColor': 'rgb(210, 210, 210)',
+                                                         'color': 'black',
+                                                         'fontWeight': 'bold',
+                                                         'textAlign': 'left'
+                                                     },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'row_index': 'odd'},
+                                                             'backgroundColor': 'rgb(220, 220, 220)',
+                                                         }
+                                                     ],
+                                                     page_size=6
+                                                     )
+
+    return fig_table_speelveldprocessschakels
+
 def make_fig_speelveldbreakdowns(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -370,6 +413,48 @@ def make_fig_speelveldbreakdowns(settingdistibution_dict):
 
     return fig_table_speelveldbreakdowns
 
+def make_fig_editablespeelveldbreakdowns(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['tijd tot nieuwe breakdown staal buigen', 'Exponential', 'no', settingdistibution_dict['mean staal buigen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean staal koppelen breakdown'], 'Nan'],
+                        ['tijd tot nieuwe breakdown omhulsel maken', 'Exponential', 'no', settingdistibution_dict['mean omhulsel maken breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal buigen', 'Exponential', 'no', settingdistibution_dict['mean fix staal buigen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen staal koppelen', 'Exponential', 'no', settingdistibution_dict['mean fix staal koppelen breakdown'], 'Nan'],
+                        ['tijd breakdown fixen omhulsel maken', 'Exponential', 'no',settingdistibution_dict['mean fix omhulsel maken breakdown'] , 'Nan'],
+                        ]
+
+    fig_table_speelveldbreakdowns = dash_table.DataTable(id = 'settingsbreakdowns',
+                                                     columns = [{'name': headercontent[i], 'id': headercontent[i]} for i in range(len(headercontent))],
+                                                     data = [{headercontent[j]: tablecontent[i][j]
+                                                              for j in range(len(tablecontent[i]))}
+                                                             for i in range(len(tablecontent))],
+                                                     editable = True,
+                                                     style_cell={'textAlign': 'left',
+                                                                 'font-family':'sans-serif'},
+                                                     style_data={
+                                                         'color': 'black',
+                                                         'backgroundColor': 'white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto',
+                                                     },
+                                                     style_header={
+                                                         'backgroundColor': 'rgb(210, 210, 210)',
+                                                         'color': 'black',
+                                                         'fontWeight': 'bold',
+                                                         'textAlign': 'left'
+                                                     },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'row_index': 'odd'},
+                                                             'backgroundColor': 'rgb(220, 220, 220)',
+                                                         }
+                                                     ],
+                                                     page_size=6
+                                                     )
+
+    return fig_table_speelveldbreakdowns
+
 def make_fig_speelveldorders(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -389,6 +474,45 @@ def make_fig_speelveldorders(settingdistibution_dict):
                                         ],
                                    layout_width = 500
                                      )
+
+    return fig_table_speelveldorders
+
+def make_fig_editablespeelveldorders(settingdistibution_dict):
+    headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
+
+    tablecontent = [['aankomst nieuwe orders', 'Exponential', 'no', settingdistibution_dict['order time mean'], 'Nan'],
+                        ['order grootte nieuwe orders', 'Normal', 'no',settingdistibution_dict['order size mean'],settingdistibution_dict['order size stdev'] ],
+                        ['new order deadlines', 'normal', 'no', settingdistibution_dict['mean deadline order'],settingdistibution_dict['stdev deadline order']],
+                        ]
+
+    fig_table_speelveldorders = dash_table.DataTable(id = 'settingsorders',
+                                                     columns = [{'name': headercontent[i], 'id': headercontent[i]} for i in range(len(headercontent))],
+                                                     data = [{headercontent[j]: tablecontent[i][j]
+                                                              for j in range(len(tablecontent[i]))}
+                                                             for i in range(len(tablecontent))],
+                                                     editable = True,
+                                                     style_cell={'textAlign': 'left',
+                                                                 'font-family':'sans-serif'},
+                                                     style_data={
+                                                         'color': 'black',
+                                                         'backgroundColor': 'white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto',
+                                                     },
+                                                     style_header={
+                                                         'backgroundColor': 'rgb(210, 210, 210)',
+                                                         'color': 'black',
+                                                         'fontWeight': 'bold',
+                                                         'textAlign': 'left'
+                                                     },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'row_index': 'odd'},
+                                                             'backgroundColor': 'rgb(220, 220, 220)',
+                                                         }
+                                                     ],
+                                                     page_size=6
+                                                     )
 
     return fig_table_speelveldorders
 
@@ -502,6 +626,37 @@ def make_fig_editablespeelveldsupply(settingdistibution_dict):
     # ],
     #     layout_width=500
     # )
+
+    return fig_table_speelveldsupply
+
+def callback_fig_editablespeelveldsupply(data, columns):
+
+    fig_table_speelveldsupply = dash_table.DataTable(id = 'settingssupply',
+                                                     columns = columns,
+                                                     data = data,
+                                                     editable = True,
+                                                     style_cell={'textAlign': 'left',
+                                                                 'font-family':'sans-serif'},
+                                                     style_data={
+                                                         'color': 'black',
+                                                         'backgroundColor': 'white',
+                                                         'whiteSpace': 'normal',
+                                                         'height': 'auto',
+                                                     },
+                                                     style_header={
+                                                         'backgroundColor': 'rgb(210, 210, 210)',
+                                                         'color': 'black',
+                                                         'fontWeight': 'bold',
+                                                         'textAlign': 'left'
+                                                     },
+                                                     style_data_conditional=[
+                                                         {
+                                                             'if': {'row_index': 'odd'},
+                                                             'backgroundColor': 'rgb(220, 220, 220)',
+                                                         }
+                                                     ],
+                                                     page_size=6
+                                                     )
 
     return fig_table_speelveldsupply
 

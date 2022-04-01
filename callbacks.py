@@ -14,14 +14,9 @@ import main_simulation
 import plottingfunctions
 import Load_settings
 
-settingdistibution_dict = Load_settings.load_settings()
+def get_callbacks(app, settingdistibution_dict, finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf):
 
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
-print('huh')
 
-sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
-
-def get_callbacks(app):
     @app.callback(Output(component_id= 'stock level graph', component_property= 'figure'),
                   [Input(component_id='select stock graph', component_property= 'value')])
     def update_stocklevelsgraph(option_slctd):
@@ -77,9 +72,10 @@ def get_callbacks(app):
         return figure
 
     @app.callback(Output('page-content', 'children'),
-                  [Input('url', 'pathname')])
-    def display_page(pathname):
-        page_manager, page_settings, page_inventory, page_leadtimes = get_pagelayouts(settingdistibution_dict)
+                  [Input('url', 'pathname'), Input('finishedorderdf', 'data')])
+    def display_page(pathname, newfo_df):
+        dff = pd.read_json(newfo_df, orient='split')
+        page_manager, page_settings, page_inventory, page_leadtimes = get_pagelayouts(settingdistibution_dict, dff, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
         if pathname == '/Manager':
             return page_manager
         elif pathname == '/Settings':
@@ -90,3 +86,36 @@ def get_callbacks(app):
             return page_leadtimes
         else:
             return page_manager
+
+    print('hooooooiiii')
+    #THE ALMIGHTY RESIMULATE CALL BACK
+    @app.callback([Output('url', 'pathname'), Output('finishedorderdf', 'data')],
+                  [Input('resimulate button', 'n_clicks')],
+                [ State('settingssupply', 'data'), State('settingssupply', 'columns')])
+    def RESIMULATE(n,data, columns ):
+        print('n is nu', n)
+        print('data suppple  = ', data)
+        fig = plottingfunctions.callback_fig_editablespeelveldsupply(data, columns)
+        #fig.show()
+        if n ==0:
+            return '/Settings', finished_orders_df
+
+        else:
+            settingdistibution_dict['reorder upto stalen stangen'] = 7000000000000000000
+
+            finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(
+                settingdistibution_dict)
+            print('jaaa')
+            sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+
+            newfodf = finished_orders_df.to_json(orient="split")
+            # listofGlobals['finished_orders_df'] = finished_orders_df
+            # listofGlobals['measures'] = measures
+            # #global measures = measures
+            # listofGlobals['sortfinisheddf'] = sortfinisheddf
+
+            return '/Manager', newfodf
+
+
+
+
