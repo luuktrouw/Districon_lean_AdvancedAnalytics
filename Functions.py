@@ -28,6 +28,10 @@ def close_disruption_measures(measures, time):
             measures['supply shortage periods']['omhulsel maken'][-1].append(time)
     return measures
 
+def read_supply_editabledata(data):
+
+
+
 #sommige disruptions kunnen nog niet gesloten zijn, bijvoorbeeld als de order al wel klaar is (omhulsel maken klaar), maar nog niet staal buigen ding heeft afgerond en dan stopt de tijd plots. dam telt t niet als helemaal klaar, dus verwijder uit finished orders
 def delete_nonfinished_orders_disruptions(finished_orders):
     for i in reversed(range(len(finished_orders))):
@@ -99,3 +103,6 @@ def calculateSafetyStocks(setting_dict):
     setting_dict['reorder upto hard stuffing'] = int(SShardstuffing)
 
     return setting_dict
+
+
+
