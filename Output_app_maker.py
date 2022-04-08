@@ -4,6 +4,10 @@ import plotly.express as px
 import dash_daq as daq
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, html, dcc
+import Plotting_functions_Management
+import Plotting_functions_Settings
+import Plotting_functions_Inventory
+import Plotting_functions_Leadtimes
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
 import json
@@ -12,20 +16,24 @@ import Functions
 import Pagelayouts
 from callbacks import get_callbacks
 import main_simulation
-import plottingfunctions
-import Load_settings
+import Plotting_functions_Extra
+import Load_inputsettings
 
-#https://www.youtube.com/watch?v=hSPmj7mK6ng
+settingdistibution_dict = Load_inputsettings.load_settings()
 
-settingdistibution_dict = Load_settings.load_settings()
+finished_orders_df, measures, totaltime = main_simulation.runsimulation(settingdistibution_dict)
 
-finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime = main_simulation.runsimulation(settingdistibution_dict)
-print('huh')
+Mananger_fig_dict = Plotting_functions_Management.get_Management_figures(finished_orders_df)
+
+Settings_fig_dict = Plotting_functions_Settings.get_Settings_figures(settingdistibution_dict)
+
+Inventory_fig_dict = Plotting_functions_Inventory.get_Inventory_figures(measures, totaltime)
+
+Leadtimes_fig_dict = Plotting_functions_Leadtimes.get_Leadtimes_figures(finished_orders_df, measures)
 
 sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
 
 ## MAKE APP
-
 
 external_stylesheets = [dbc.themes.BOOTSTRAP]
 
@@ -35,25 +43,26 @@ app = dash.Dash(__name__,
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content'),
-    dcc.Store(id='finishedorderdf', storage_type='session', data = finished_orders_df.to_json(orient="split")),
-    dcc.Store(id='measures', storage_type='session', data = measures),
-    dcc.Store(id='means', storage_type='session', data = means),
-    dcc.Store(id='lower_5_quantiles', storage_type='session', data = lower_5_quantiles),
-    dcc.Store(id='upper_95_quantiles', storage_type='session', data = upper_95_quantiles),
-    dcc.Store(id='fig_total_thoughout_time', storage_type='session', data=fig_total_thoughout_time),
-    dcc.Store(id='fig_queue_time_staal_buigen', storage_type='session', data=fig_queue_time_staal_buigen),
-    dcc.Store(id='fig_queue_time_staal_koppelen', storage_type='session', data=fig_queue_time_staal_koppelen),
-    dcc.Store(id='fig_queue_time_omhulsel_maken', storage_type='session', data=fig_queue_time_omhulsel_maken),
-    dcc.Store(id='fig_total_queue_time', storage_type='session', data=fig_total_queue_time),
-    dcc.Store(id='fig_gantt_disruptions', storage_type='session', data=fig_gantt_disruptions),
-    dcc.Store(id='totaltime', storage_type='session', data=totaltime),
-    dcc.Store(id='settingdistibution_dict', storage_type='session', data=settingdistibution_dict),
-    dcc.Store(id='sortfinisheddf', storage_type='session', data=sortfinisheddf.to_json(orient="split")),
-
+    # change to 1 loading met als children al die Stores ipv elke apart)
+    dcc.Loading(
+                children= [
+                            html.Div([html.Div(id='page-content')]),
+                            html.Div([dcc.Store(id='finishedorderdf', storage_type='session', data = finished_orders_df.to_json(orient="split")),]),
+                            html.Div([dcc.Store(id='measures', storage_type='session', data = measures),]),
+                            html.Div([dcc.Store(id='totaltime', storage_type='session', data=totaltime),]),
+                            html.Div([dcc.Store(id='settingdistibution_dict', storage_type='session', data=settingdistibution_dict),]),
+                            html.Div([dcc.Store(id='sortfinisheddf', storage_type='session', data=sortfinisheddf.to_json(orient="split")),]),
+                            html.Div([dcc.Store(id='Mananger_fig_dict', storage_type='session', data=Mananger_fig_dict),]),
+                            html.Div([dcc.Store(id='Settings_fig_dict', storage_type='session', data=Settings_fig_dict),]),
+                            html.Div([dcc.Store(id='Inventory_fig_dict', storage_type='session', data=Inventory_fig_dict),]),
+                            html.Div([dcc.Store(id='Leadtimes_fig_dict', storage_type='session', data=Leadtimes_fig_dict),]),
+                          ],
+                type = 'circle',
+                fullscreen= True
+                )
 ])
 
-get_callbacks(app,settingdistibution_dict,  finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, sortfinisheddf)
-print('heeeeeeeeyy')
+get_callbacks(app)
+
 if __name__ == '__main__':
     app.run_server()

@@ -2,22 +2,24 @@ import Functions_get_info
 import math
 from bisect import bisect
 
+'''
+This file contains functions which start the processing of orders in process steps
+For each process step, they the relevant function tries to run the first item from queue, 
+until there is nothing in queue anymore, or until the first order can not be processed due to any reason
+A function should be called if something changes with respect to that process step (for example a new order in queue or process step finishes an order)
+'''
+
 def start_process_staal_buigen(instance, settingdistibution_dict):
     # what goes in the machine:
     while len(instance.inventories[0]) > 0 and instance.capacities[0] - instance.work_state[0][0] >= instance.inventories[0][0][1] and all(instance.materialstate[0][i] >= instance.inventories[0][0][2]['bill of materials']['staal buigen']['raw material'][i] for i in instance.inventories[0][0][2]['bill of materials']['staal buigen']['raw material'].keys()):
         newprocessing_order = instance.inventories[0].pop(0)
 
+        # update the material state and the measures
         for i in newprocessing_order[2]['bill of materials']['staal buigen']['raw material'].keys():
             # for the measures, add before and after the updating to have the complete lines
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[0][i], instance.tijd])
             instance.materialstate[0][i] -= newprocessing_order[2]['bill of materials']['staal buigen']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[0][i], instance.tijd])
-
-        '''
-        # if materials to low, order up to a certain level.
-        if instance.materialstate[0]['stalen stangen'] <= reorderpoint_stalenstangen and len(instance.supplyorders_stalenstangen_inprocess) == 1:
-            instance.supplyorders_stalenstangen_inprocess.insert(0,[instance.tijd + Functions_get_info.get_supplytime_stalen_stangen(), reorder_upto_point_stalenstangen -instance.materialstate[0]['stalen stangen']])
-        '''
 
         instance.measures['workstate times'][0][instance.work_state[0][0]] += instance.tijd - instance.work_state[0][1]
         instance.work_state[0][0] += newprocessing_order[1]
@@ -62,12 +64,14 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
         instance.work_state[1][0] += newprocessing_order[1]
         instance.work_state[1][1] = instance.tijd
 
+        # update the raw material state and the measures
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'].keys():
             # for the measures, add before and after the updating to have the complete lines
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[1][i], instance.tijd])
             instance.materialstate[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[1][i], instance.tijd])
 
+        # update the subassembly state and the measures
         for i in newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'].keys():
             # for the measures, add before and after the updating to have the complete lines
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
@@ -116,12 +120,14 @@ def start_process_omhulsel_maken(instance, settingdistibution_dict):
         instance.work_state[2][0] += newprocessing_order[1]
         instance.work_state[2][1] = instance.tijd
 
+        # update the raw material state and the measures
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'].keys():
             # for the measures, add before and after the updating to have the complete lines
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[2][i], instance.tijd])
             instance.materialstate[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['raw material'][i]
             instance.measures['stock levels']['raw materials'][i].append([instance.materialstate[2][i], instance.tijd])
 
+        # update the subassembly state and the measures
         for i in newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'].keys():
             # for the measures, add before and after the updating to have the complete lines
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])

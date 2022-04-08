@@ -5,18 +5,18 @@ Supplier-> inv-> productionstep A-> inv-> productionstep B-> inv-> productionste
 The production steps each have certain distribution of lead times (for example N(4,2))
 Everything is in seconds
 '''
-import Functions4simulation
+import Simulation_event_functions
 import math
 import plotly.express as px
 import plotly.graph_objects as go
-import Functions4simulation
+import Simulation_event_functions
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 import statistics
 import pandas as pd
-import plottingfunctions
+import Plotting_functions_Extra
 import Functions
 import Functions_get_info
 
@@ -25,47 +25,55 @@ import Functions_get_info
 
 def runsimulation(settingdistibution_dict):
 
-    numberloops = 1
-
-    totalinventorie_measure = []
-
-    #EVENT NAMES IS IN ORDER, otherwise the next_t_event will not work
-    eventnames = ["new order", "staal buigen klaar", "staal koppelen klaar", "omhulsel klaar", 'supply stalen stangen', 'supply koppeldraad', 'supply stuffing', 'order new stalen stangen', 'order new koppeldraad', 'order new stuffing']
-
     ###########################
+    # the class instancezero initializes the state (instance) of the production process.
+    # most initial state variables are received from the setting distribution dictionary which is input
+    # each instance variable is described and implemented below
     class instancezero():
         def __init__(self):
-            initdict1 = {}
-            initdict2 = {}
-            initdict3 = {}
+            # the work state variables displays the amount of capacity of each production step is currently being used
+            # with also the starting time of that working state illustration below:
+            # [[workstateprocess 1, start time this workstate], [workstateprocess 2, start time this workstate], [workstateprocess 3, start time this workstate]]
             self.work_state= [[0,0], [0,0], [0,0]]
+            # material state is a list which describes the current inventory of raw materials at each process step example below:
+            # [{dictionary with raw materials and its current amount in step 1}, {dictionary with raw materials and its current amount in step 2}, {...}]
             self.materialstate = [{'stalen stangen': settingdistibution_dict['reorder upto stalen stangen']},
                                   {'koppeldraad':settingdistibution_dict['reorder upto koppeldraad']},
                                   {'soft stuffing': settingdistibution_dict['reorder upto soft stuffing'],
                                    'medium stuffing': settingdistibution_dict['reorder upto medium stuffing'],
                                    'hard stuffing': settingdistibution_dict['reorder upto hard stuffing']}
                                   ]
+            # idem as the work state for the subassemblies at each process step
             self.stockstate_subassemblies = [{},{'gebogen stangen':settingdistibution_dict['SS gebogen stangen']},
                                                 {'gekoppeld eenpersoons': settingdistibution_dict['SS gekoppeld eenpersoons'],
                                                  'gekoppeld twijfelaar': settingdistibution_dict['SS gekoppeld twijfelaar'],
                                                  'gekoppeld queensize': settingdistibution_dict['SS gekoppeld queensize'],
                                                  'gekoppeld kingsize': settingdistibution_dict['SS gekoppeld kingsize'],
                                                  }]
-            self.priority_materialstate = [{'stalen stangen': 100}, {'koppeldraad': 100}, {'soft stuffing': 100, 'medium stuffing': 100, 'hard stuffing': 100}]
-            self.priority_stockstate_subassemblies = [{}, {'gebogen stangen': settingdistibution_dict['SS gebogen stangen']},
-                                             {'gekoppeld eenpersoons': settingdistibution_dict['SS gekoppeld eenpersoons'],
-                                              'gekoppeld twijfelaar': settingdistibution_dict['SS gekoppeld twijfelaar'],
-                                              'gekoppeld queensize': settingdistibution_dict['SS gekoppeld queensize'],
-                                              'gekoppeld kingsize': settingdistibution_dict['SS gekoppeld kingsize'],
-                                              }]
+            # the supplyorders_..._inprocess describes the placed orders at the supplier for a certain process step, which are in process (need to be delivered)
+            # It is a sorted list containing all outstanding supplier orders, each order is a list which is [arrival time of order, ordered ammount]
+            # At first, the outstanding order is initialized as 0 with an arrival time of inf to prevent conflicts
+            # note that the order list of stalen stangen and koppeldraad have ordered quantitiy without a defined material, this is possible since those steps only contain 1 material
             self.supplyorders_stalenstangen_inprocess = [[math.inf,0]]
             self.supplyorders_koppeldraad_inprocess = [[math.inf,0]]
             self.supplyorders_stuffing_inprocess = [[math.inf,{'soft stuffing': 0, 'medium stuffing': 0, 'hard stuffing': 0}]]
+            # the inventory state is also a list for each process.
+            # For each process step it contains the orders which are waiting for a production step - in 'inventory' - since they can not be proceced for whatever reason.
+            # Each process step has a sorted list based on priority if it is filled. Each order in that list has 3 attributes: [endtime inventory (inf since not determined), ordersize, orderdict (dict with details of order)]
+            # Important is that the lists are sorted, and the first order will be the one which will go into the production step next
+            # example: [[[math.inf, 4, orderdict_FH10], [math.inf, 2, orderdict_FH14]] , [] , [[math.inf, 2, orderdict_FH14]] ]
             self.inventories = [[], [], []]
+            # tijd gives the current time of the simulation
             self.tijd = 0
-            self.orders_inprocess0 = [[math.inf,0,initdict1]] #first list is the finish times, second the order sizes
-            self.orders_inprocess1 = [[math.inf,0,initdict2]]
-            self.orders_inprocess2 = [[math.inf,0,initdict3]]
+            # orders_inprocessX contains the orders currently processing in production step X, they are sorted on first finishing time
+            # Each order is also: [finish time, size, orderdict]
+            # They are initialized as inf and capacity 0, to prevent conflicts
+            self.orders_inprocess0 = [[math.inf,0, {}]] #first list is the finish times, second the order sizes
+            self.orders_inprocess1 = [[math.inf,0, {}]]
+            self.orders_inprocess2 = [[math.inf,0, {}]]
+            # the nexteventtimes is a dictionary which contains the next times of each possible event.
+            # they are needed to determine which event is executed next (the earliest time of those)
+            # Most of them are initialized by the settingdistribution_dict, already with a given distribution, or infinite since they are not yet possible
             self.nexteventtimes = {'new order': Functions_get_info.get_length_neworder(settingdistibution_dict['order time mean'], settingdistibution_dict['order time stdev']),
                                    "staal buigen klaar" : self.orders_inprocess0[0][0],
                                    "staal koppelen klaar": self.orders_inprocess1[0][0],
@@ -82,8 +90,12 @@ def runsimulation(settingdistibution_dict):
                                    'fix staal buigen breakdown': math.inf,
                                    'fix staal koppelen breakdown': math.inf,
                                    'fix omhulsel maken breakdown': math.inf}
+            # amountproduced keeps track of the total amount produced
             self.amountproduced = 0
+            # capacities contains the capacities of each production step, imported from the setting distribution dict
             self.capacities = [settingdistibution_dict['capacity staal buigen'],settingdistibution_dict['capacity staal koppelen'],settingdistibution_dict['capacity omhulsel maken']]
+            # measures is a dictionary which keeps track of some important measures throughout the simulation
+            # measures is updated during each event when something happens which we need to keep track of
             self.measures = {'workstate times':[{i: 0 for i in range(self.capacities[0] + 1)},
                                                 {i: 0 for i in range(self.capacities[1] + 1)},
                                                 {i: 0 for i in range(self.capacities[2] + 1)}],
@@ -103,41 +115,32 @@ def runsimulation(settingdistibution_dict):
                                                                 }
                                               }
                             }
-            self.finishedorders = [] # list consisting of dictionaries of orders
+            # finishedorders contains all orders which are finished, with their orderdict (orderdict is complemented with additional info during simulation)
+            self.finishedorders = []
 
             # measures
 
-    for loopcounter in range(numberloops):
-        print('current loop number: ', loopcounter)
-        eventcounter = 0
+    # here the instance is initialized by calling instancezero
+    instance = instancezero()
 
-        instance = instancezero()
-        instance.tijd
+    # the time limit for how long the simulation will run
+    timelimit = 4800000
 
-        curtimeinterval = 4800000
-        timeinterval = 4800000
+    # in the next while loop the simulation is performed. it keeps running until the time exceeded the time limit
+    # first the next event and the time of the next event are determined from the instance.
+    # afterwards the instance is updated using the updatevariable function
+    while instance.tijd <= timelimit:
+        next_event = min(instance.nexteventtimes, key=instance.nexteventtimes.get)
+        next_t_event = instance.nexteventtimes[next_event]
+        instance = Simulation_event_functions.updatevariables(instance, next_event, next_t_event, settingdistibution_dict)
 
-        while instance.tijd <= 4800000:
-            previoustime = instance.tijd
-            if instance.tijd > curtimeinterval:
-                print('current time in simulation is: ', curtimeinterval)
-                curtimeinterval += timeinterval
-            next_event = min(instance.nexteventtimes, key=instance.nexteventtimes.get)
-            next_t_event = instance.nexteventtimes[next_event]
-            instance = Functions4simulation.updatevariables(instance, next_event, next_t_event, settingdistibution_dict)
-            #print('tijd: ', instance.tijd)
-            #print('inventories: ', sum(instance.inventories[0]), sum(instance.inventories[1]), sum(instance.inventories[2]))
-
-            eventcounter += 1
-
-    # close the disruption measures
+    # close the disruption measures, if some breakdown or something is still going on, need and end time to evaluate it, so this is the end time of the simulation
     instance.measures = Functions.close_disruption_measures(instance.measures, instance.tijd)
 
-    #########
-    # Make dataframe of all finished orders
-    #########
+    # Make dataframe of all finished orders and its data
     finished_orders_df = pd.DataFrame(instance.finishedorders)
 
+    #below is used for error checking
     for i in range(len(finished_orders_df)):
         if i not in finished_orders_df.index:
             print('hoiiiiii')
@@ -147,80 +150,17 @@ def runsimulation(settingdistibution_dict):
     #sommige disruptions kunnen nog niet gesloten zijn, bijvoorbeeld als de order al wel klaar is (omhulsel maken klaar), maar nog niet staal buigen ding heeft afgerond en dan stopt de tijd plots. dam telt t niet als helemaal klaar, dus verwijder uit finished orders
     finished_orders_df = Functions.delete_nonfinished_orders_disruptions(finished_orders_df)
 
+    #below used for error checking
     for i in range(len(finished_orders_df)):
         if i not in finished_orders_df.index:
             print('hoi')
             print(len(finished_orders_df))
             print(i)
 
+    # add three important measures for the finished orders dataframe
     finished_orders_df['total queue time'] = [finished_orders_df['tijd inventory staal buigen'][i] + finished_orders_df['tijd inventory staal koppelen'][i] + finished_orders_df['tijd inventory omhulsel maken'][i] for i in range(len(finished_orders_df))]
-
     finished_orders_df['total producing time'] = [finished_orders_df['tijd staal buigen'][i] + finished_orders_df['tijd staal koppelen'][i] + finished_orders_df['tijd omhulsel maken'][i] for i in range(len(finished_orders_df))]
-
     finished_orders_df['lateness'] = [max(finished_orders_df['finish time'][i] - finished_orders_df['deadline order'][i],0) for i in range(len(finished_orders_df))]
 
-    means = {'total process time': finished_orders_df['total process time'].mean(), 'total queue time': finished_orders_df['total queue time'].mean(), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].mean(), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].mean(),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].mean(),
-             'staal buigen': finished_orders_df['tijd staal buigen'].mean(), 'staal koppelen': finished_orders_df['tijd staal koppelen'].mean(), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].mean(), 'total producing time': finished_orders_df['total producing time'].mean(), 'lateness': finished_orders_df['lateness'].mean()}
+    return finished_orders_df, instance.measures, instance.tijd
 
-    lower_5_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.05), 'total queue time': finished_orders_df['total queue time'].quantile(.05), 'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].quantile(.05), 'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].quantile(.05),'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.05),
-             'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.05), 'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.05), 'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.05), 'total producing time': finished_orders_df['total producing time'].quantile(.05), 'lateness': finished_orders_df['lateness'].quantile(.05)}
-
-    upper_95_quantiles = {'total process time': finished_orders_df['total process time'].quantile(.95),
-                         'total queue time': finished_orders_df['total queue time'].quantile(.95),
-                         'queue staal buigen': finished_orders_df['tijd inventory staal buigen'].quantile(.95),
-                         'queue staal koppelen': finished_orders_df['tijd inventory staal koppelen'].quantile(.95),
-                         'queue omhulsel maken': finished_orders_df['tijd inventory omhulsel maken'].quantile(.95),
-                         'staal buigen': finished_orders_df['tijd staal buigen'].quantile(.95),
-                         'staal koppelen': finished_orders_df['tijd staal koppelen'].quantile(.95),
-                         'omhulsel maken': finished_orders_df['tijd omhulsel maken'].quantile(.95),
-                         'total producing time': finished_orders_df['total producing time'].quantile(.95),
-                         'lateness': finished_orders_df['lateness'].quantile(.95)}
-
-    #########
-    # Make dataframe of all finished orders
-    #########
-
-    work_state_times_df = pd.DataFrame(instance.measures['workstate times'])
-
-    #print_inventory = [[totalinventorie_measure[i][0][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][0]))]  , [totalinventorie_measure[i][1][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][1]))]  ,  [totalinventorie_measure[i][2][j] for i in range(len(totalinventorie_measure)) for j in range(len(totalinventorie_measure[i][2]))] ]
-
-    fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time = plottingfunctions.Make_kpi_figures(finished_orders_df)
-
-    fig_gantt_disruptions = plottingfunctions.plot_gantt_disruptions(instance.measures)
-
-    ffiiiff = plottingfunctions.make_violin_VSM_statistics(finished_orders_df)
-    return finished_orders_df, instance.measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, instance.tijd
-
-
-#fig = px.histogram(finished_orders_df, x="tijd inventory staal buigen")
-#fig.show()
-
-#fig = px.histogram(finished_orders_df, x="tijd inventory staal koppelen")
-#fig.show()
-
-#fig = px.histogram(finished_orders_df, x="tijd inventory omhulsel maken")
-#fig.show()
-
-#plottingfunctions.plotworkstates_fractions_staalbuigen(instance.work_state_times[0])
-
-#plottingfunctions.plotworkstates_fractions_staalkoppelen(instance.work_state_times[1])
-
-#plottingfunctions.plotworkstates_fractions_omhulselmaken(instance.work_state_times[2])
-
-#plottingfunctions.wachttijd_voor_staal_buigen(instance.finishedorders)
-
-'''
-plt.hist([print_inventory[0],print_inventory[1], print_inventory[2]], weights=[np.ones(len(print_inventory[0])) / len(print_inventory[0]) for w in range(3)], label = ['inv before 0','inv before 1', 'inv before 2'])
-#plt.hist(x=print_inventory[1], bins = 50, label = 'inv before 1')
-#plt.hist(x=print_inventory[2], bins = 50, label = 'inv before 2')
-plt.legend()
-plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
-plt.show()
-
-
-inventory_times_staalbuigen = []
-for i in range(len(instance.finishedorders)):
-    inventory_times_staalbuigen.append(instance.finishedorders[i]['tijd inventory staal buigen'])
-plt.hist(inventory_times_staalbuigen, bins = 200)
-plt.show()
-'''

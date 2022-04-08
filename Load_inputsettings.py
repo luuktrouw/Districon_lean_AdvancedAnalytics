@@ -1,4 +1,7 @@
-import Functions
+'''
+This file reads and returns the input data in a dictionary by hand as settingdistibution_dict
+If the input data needs to be changed, here the adjustments have to be made (and in some other functions such as get orderinfo)
+'''
 
 def load_settings():
     ############## SETTINGS
@@ -19,7 +22,7 @@ def load_settings():
     stdev_order_deadline = 30
 
     # high priority chance
-    high_priority_chance = 0.01
+    high_priority_chance = 0.03
 
     # supply (manual stock level determined)
     supply_order_interval_time = 24000
