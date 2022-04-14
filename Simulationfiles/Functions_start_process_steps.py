@@ -1,5 +1,4 @@
-import Functions_get_info
-import math
+from Simulationfiles import Functions_get_info
 from bisect import bisect
 
 '''
@@ -78,7 +77,7 @@ def start_process_staal_koppelen(instance, settingdistibution_dict):
             instance.stockstate_subassemblies[1][i] -= newprocessing_order[2]['bill of materials']['staal koppelen']['subassembly'][i]
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[1][i], instance.tijd])
 
-        finish_time_this_order =  instance.tijd + Functions_get_info.get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time'])
+        finish_time_this_order = instance.tijd + Functions_get_info.get_length_staal_koppelen(settingdistibution_dict['mean staal koppelen time'], settingdistibution_dict['stdev staal koppelen time'])
         finish_time_index = bisect(instance.orders_inprocess1, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd staal koppelen'] = instance.tijd
@@ -134,7 +133,7 @@ def start_process_omhulsel_maken(instance, settingdistibution_dict):
             instance.stockstate_subassemblies[2][i] -= newprocessing_order[2]['bill of materials']['omhulsel maken']['subassembly'][i]
             instance.measures['stock levels']['subassemblies'][i].append([instance.stockstate_subassemblies[2][i], instance.tijd])
 
-        finish_time_this_order =  instance.tijd + Functions_get_info.get_length_omhulsel_plaatsen(settingdistibution_dict['mean omhulsel maken time'],settingdistibution_dict['stdev omhulsel maken time'] )
+        finish_time_this_order = instance.tijd + Functions_get_info.get_length_omhulsel_plaatsen(settingdistibution_dict['mean omhulsel maken time'], settingdistibution_dict['stdev omhulsel maken time'])
         finish_time_index = bisect(instance.orders_inprocess2, [finish_time_this_order])
 
         newprocessing_order[2]['start tijd omhulsel maken'] = instance.tijd

@@ -1,7 +1,6 @@
 import math
-from bisect import bisect
-import Functions_get_info
-import Functions_start_process_steps
+from Simulationfiles import Functions_get_info
+from Simulationfiles import Functions_start_process_steps
 
 ######
 '''
@@ -24,7 +23,7 @@ def event_neworder(instance, settingdistibution_dict):
     orderdict = {'orderID': orderID,
                  #'portion':(i+1)/int(totalordersize),
                  'time received': instance.tijd,
-                 'deadline order': instance.tijd + Functions_get_info.get_order_deadline(settingdistibution_dict['mean deadline order'],settingdistibution_dict['stdev deadline order']),
+                 'deadline order': instance.tijd + Functions_get_info.get_order_deadline(settingdistibution_dict['mean deadline order'], settingdistibution_dict['stdev deadline order']),
                  'softnesstype': softness, 'bedsize': sizethisorder, 'high priority': highpriority,
                  'bill of materials': billofmaterials,
                  'size of the order': totalordersize,
@@ -193,7 +192,7 @@ def event_order_new_stalen_stangen(instance, settingdistibution_dict):
     instance.nexteventtimes['order new stalen stangen'] += settingdistibution_dict['supply interval order']
     timeoftheorder = instance.tijd + Functions_get_info.get_supplytime_stalen_stangen(settingdistibution_dict['mean supply time stalen stangen'], settingdistibution_dict['stdev supply time stalen stangen'])
     amountinqueuetorderextra = sum(instance.inventories[0][i][2]['bill of materials']['staal buigen']['raw material']['stalen stangen'] for i in range(len(instance.inventories[0])))
-    instance.supplyorders_stalenstangen_inprocess.insert(0,[timeoftheorder, Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto stalen stangen'] + amountinqueuetorderextra -instance.materialstate[0]['stalen stangen'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])])
+    instance.supplyorders_stalenstangen_inprocess.insert(0, [timeoftheorder, Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto stalen stangen'] + amountinqueuetorderextra - instance.materialstate[0]['stalen stangen'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])])
     instance.nexteventtimes['supply stalen stangen'] = timeoftheorder
 
     return instance
@@ -204,7 +203,7 @@ def event_order_new_koppeldraad(instance, settingdistibution_dict):
     instance.nexteventtimes['order new koppeldraad'] += settingdistibution_dict['supply interval order']
     timeoftheorder = instance.tijd + Functions_get_info.get_supplytime_koppeldraad(settingdistibution_dict['mean supply time koppeldraad'], settingdistibution_dict['stdev supply time koppeldraad'])
     amountinqueuetorderextra = sum(instance.inventories[1][i][2]['bill of materials']['staal koppelen']['raw material']['koppeldraad'] for i in range(len(instance.inventories[1])))
-    instance.supplyorders_koppeldraad_inprocess.insert(0,[timeoftheorder, Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto koppeldraad'] + amountinqueuetorderextra -instance.materialstate[1]['koppeldraad'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])])
+    instance.supplyorders_koppeldraad_inprocess.insert(0, [timeoftheorder, Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto koppeldraad'] + amountinqueuetorderextra - instance.materialstate[1]['koppeldraad'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])])
     instance.nexteventtimes['supply koppeldraad'] = timeoftheorder
     return instance
 
@@ -218,7 +217,7 @@ def event_order_new_stuffing(instance, settingdistibution_dict):
         for j in instance.inventories[2][i][2]['bill of materials']['omhulsel maken']['raw material'].keys():
             amountinqueuetorderextra[j] += instance.inventories[2][i][2]['bill of materials']['omhulsel maken']['raw material'][j]
 
-    instance.supplyorders_stuffing_inprocess.insert(0,[timeoftheorder, {'soft stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto soft stuffing'] + amountinqueuetorderextra['soft stuffing'] - instance.materialstate[2]['soft stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']), 'medium stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto medium stuffing'] + amountinqueuetorderextra['medium stuffing'] - instance.materialstate[2]['medium stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']), 'hard stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto hard stuffing'] + amountinqueuetorderextra['hard stuffing'] - instance.materialstate[2]['hard stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])}])
+    instance.supplyorders_stuffing_inprocess.insert(0, [timeoftheorder, {'soft stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto soft stuffing'] + amountinqueuetorderextra['soft stuffing'] - instance.materialstate[2]['soft stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']), 'medium stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto medium stuffing'] + amountinqueuetorderextra['medium stuffing'] - instance.materialstate[2]['medium stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity']), 'hard stuffing': Functions_get_info.get_delivered_order_quantity(settingdistibution_dict['reorder upto hard stuffing'] + amountinqueuetorderextra['hard stuffing'] - instance.materialstate[2]['hard stuffing'], settingdistibution_dict['stddev order hoeveelheid als percentage van quantity'])}])
     instance.nexteventtimes['supply stuffing'] = timeoftheorder
     return instance
 

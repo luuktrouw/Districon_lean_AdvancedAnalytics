@@ -1,21 +1,9 @@
-
-from dash.dependencies import Input, Output
-
-import dash
-import pandas as pd
-import plotly.express as px
-import dash_daq as daq
 import dash_bootstrap_components as dbc
-from dash import Input, Output, State, html, dcc
-import plotly.graph_objects as go
-from dash.dependencies import Input, Output
-
-import main_simulation
-import Plotting_functions_Extra
-import Load_inputsettings
+from dash import html, dcc
 
 navbar = dbc.NavbarSimple(
         children=[
+            dbc.NavItem(dbc.NavLink("VSM Visualization", href="VSM")),
             dbc.NavItem(dbc.NavLink("Management summary", href="Manager")),
             dbc.NavItem(dbc.NavLink("Settings", href="Settings")),
             dbc.NavItem(dbc.NavLink("Inventory", href="Inventory")),
@@ -151,7 +139,8 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
 
     row1_leadtimes = dbc.Row(
         [
-            dcc.Graph(id='VSMstatistics', figure=Leadtimes_fig_dict['VSM statistics times'])
+            dbc.Row(dcc.Graph(id='VSMstatistics', figure=Leadtimes_fig_dict['VSM statistics times'])),
+            dbc.Row(dcc.Slider(0, 100, id='VSMfilteroutpercentage', value=5)),
         ]
     )
 
@@ -195,3 +184,12 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
 
     page_leadtimes = html.Div([navbar, headline, row1_leadtimes, row2_leadtimes,row3_leadtimes, ])
     return page_leadtimes
+
+def get_pagelayout_VSMpicture(VSMfilepath):
+    headline = html.H1("VSM Visualization", style={'text-align': 'center'})
+
+    VSMpicture = html.Img(src="../VSMvisualizationMatrasses.jpg")
+
+    page_VSM = html.Div([navbar, headline,VSMpicture])
+    return page_VSM
+

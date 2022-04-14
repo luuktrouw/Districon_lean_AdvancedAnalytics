@@ -2,7 +2,8 @@ from dash import Dash, dcc, html
 import time
 
 from dash.dependencies import Input, Output
-
+import os
+currentpath = os.getcwd()
 app = Dash(__name__)
 
 app.layout = html.Div(
@@ -14,6 +15,7 @@ app.layout = html.Div(
             type="default",
             children=html.Div(id="loading-output-1")
         ),
+        html.Img(src = "../VSMvisualizationMatrasses.jpg"),
         html.Div(
             [
                 dcc.Input(id="loading-input-2", value='Input triggers nested spinner'),

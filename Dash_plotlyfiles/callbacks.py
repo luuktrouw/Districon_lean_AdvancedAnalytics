@@ -1,7 +1,3 @@
-
-from dash.dependencies import Input, Output
-
-
 import pandas as pd
 from dash import State
 from dash.dependencies import Input, Output
@@ -9,8 +5,11 @@ import Functions
 import Pagelayouts
 import Plotting_functions_Inventory
 import Plotting_functions_Management
-import main_simulation
-import Plotting_functions_Extra
+import Plotting_functions_Leadtimes
+import Plotting_functions_Settings
+from Simulationfiles import main_simulation
+from dash.exceptions import PreventUpdate
+
 
 def get_callbacks(app):
 
@@ -40,6 +39,19 @@ def get_callbacks(app):
             figu = Leadtimes_fig_dict['throughput times per schakel']['Queueing time omhulsel maken']
 
         return figu
+
+    @app.callback(Output(component_id='VSMstatistics', component_property='figure'),
+                  [Input(component_id='VSMfilteroutpercentage', component_property='value')],
+                  [State('sortfinisheddf', 'data')])
+    def update_VSM_graph(percentage,sortfinisheddf):
+        sortfinisheddf = pd.read_json(sortfinisheddf, orient='split')
+        sortfinisheddf = sortfinisheddf.sort_values(by='total queue time',ascending=False)
+        newwwdf = sortfinisheddf.reset_index(drop = True)
+        dropnumber = int(percentage/100 * len(sortfinisheddf))
+        newdf = sortfinisheddf.iloc[dropnumber:, :]
+        figure = Plotting_functions_Leadtimes.make_violin_VSM_statistics(newdf)
+        return figure
+
 
     @app.callback(Output(component_id='Pie reason queue', component_property='figure'),
                   [Input(component_id='slider disruption measure percentage', component_property='value')],
@@ -72,16 +84,19 @@ def get_callbacks(app):
     @app.callback(Output('page-content', 'children'),
                   [Input('url', 'pathname')],
                   [
+                    State('VSMfilepath', 'data'),
                     State('Mananger_fig_dict', 'data'),
                     State('Settings_fig_dict', 'data'),
                     State('Inventory_fig_dict', 'data'),
                     State('Leadtimes_fig_dict', 'data'),
                   ]
                   )
-    def display_page(pathname, Mananger_fig_dict,Settings_fig_dict , Inventory_fig_dict, Leadtimes_fig_dict):
+    def display_page(pathname,VSMfilepath, Mananger_fig_dict,Settings_fig_dict , Inventory_fig_dict, Leadtimes_fig_dict):
         #dff = pd.read_json(newfo_df, orient='split')
         #sortfinisheddf = pd.read_json(sortfinisheddf, orient='split')
-        if pathname == '/Manager':
+        if pathname == '/VSM':
+            return Pagelayouts.get_pagelayout_manager(Mananger_fig_dict)
+        elif pathname == '/Manager':
             return Pagelayouts.get_pagelayout_manager(Mananger_fig_dict)
         elif pathname == '/Settings':
             return Pagelayouts.get_pagelayout_settings(Settings_fig_dict)
@@ -95,18 +110,13 @@ def get_callbacks(app):
     #THE ALMIGHTY RESIMULATE CALL BACK
     @app.callback([Output('url', 'pathname'), Output('finishedorderdf', 'data'),
                    Output('measures', 'data'),
-                   Output('means', 'data'),
-                   Output('lower_5_quantiles', 'data'),
-                   Output('upper_95_quantiles', 'data'),
-                   Output('fig_total_thoughout_time', 'data'),
-                   Output('fig_queue_time_staal_buigen', 'data'),
-                   Output('fig_queue_time_staal_koppelen', 'data'),
-                   Output('fig_queue_time_omhulsel_maken', 'data'),
-                   Output('fig_total_queue_time', 'data'),
-                   Output('fig_gantt_disruptions', 'data'),
                    Output('totaltime', 'data'),
                    Output('settingdistibution_dict', 'data'),
-                   Output('sortfinisheddf', 'data')
+                   Output('sortfinisheddf', 'data'),
+                   Output('Mananger_fig_dict', 'data'),
+                   Output('Settings_fig_dict', 'data'),
+                   Output('Inventory_fig_dict', 'data'),
+                   Output('Leadtimes_fig_dict', 'data'),
                    ],
                   [Input('resimulate button', 'n_clicks')],
                 [ State('settingssupply', 'data'), State('settingsbreakdowns', 'data'),State('settingsprocessschakels', 'data'),State('settingsorders', 'data'),])
@@ -115,31 +125,25 @@ def get_callbacks(app):
         print('data suppple  = ', datasupply)
         #fig.show()
         if n ==0:
-            return '/Settings', finished_orders_df, measures, means, lower_5_quantiles, upper_95_quantiles, fig_total_thoughout_time, fig_queue_time_staal_buigen, fig_queue_time_staal_koppelen, fig_queue_time_omhulsel_maken, fig_total_queue_time, fig_gantt_disruptions, totaltime, settingdistibution_dict, sortfinisheddf
+            raise PreventUpdate
 
         else:
             settingdistibution_dict = Functions.read_supply_editabledata(dataorders, datasupply, dataschakels, databreakdowns)
 
             finished_orders_df, measures, totaltime = main_simulation.runsimulation(settingdistibution_dict)
 
-            sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+            Mananger_fig_dict = Plotting_functions_Management.get_Management_figures(finished_orders_df)
 
-            newfodf = finished_orders_df.to_json(orient="split")
-            newmeasures = measures
-            newmeans = means
-            newlower_5_quantiles = lower_5_quantiles
-            newupper_95_quantiles = upper_95_quantiles
-            newfig_total_thoughout_time = fig_total_thoughout_time
-            newfig_queue_time_staal_buigen = fig_queue_time_staal_buigen
-            newfig_queue_time_staal_koppelen = fig_queue_time_staal_koppelen
-            newfig_queue_time_omhulsel_maken = fig_queue_time_omhulsel_maken
-            newfig_total_queue_time = fig_total_queue_time
-            newfig_gantt_disruptions = fig_gantt_disruptions
-            newtotaltime = totaltime
-            newsettingdistibution_dict = settingdistibution_dict
-            newsortfinisheddf = sortfinisheddf.to_json(orient="split")
+            Settings_fig_dict = Plotting_functions_Settings.get_Settings_figures(settingdistibution_dict)
 
-            return '/Manager', newfodf, newmeasures, newmeans, newlower_5_quantiles, newupper_95_quantiles, newfig_total_thoughout_time, newfig_queue_time_staal_buigen, newfig_queue_time_staal_koppelen, newfig_queue_time_omhulsel_maken, newfig_total_queue_time, newfig_gantt_disruptions, newtotaltime, newsettingdistibution_dict, newsortfinisheddf
+            Inventory_fig_dict = Plotting_functions_Inventory.get_Inventory_figures(measures, totaltime)
+
+            Leadtimes_fig_dict = Plotting_functions_Leadtimes.get_Leadtimes_figures(finished_orders_df, measures)
+
+            sortfinisheddf = finished_orders_df.sort_values('total queue time', ascending=False)
+
+            return '/Manager', finished_orders_df.to_json(orient="split"), measures, totaltime, settingdistibution_dict, \
+                   sortfinisheddf.to_json(orient="split"), Mananger_fig_dict, Settings_fig_dict, Inventory_fig_dict, Leadtimes_fig_dict
 
 
 

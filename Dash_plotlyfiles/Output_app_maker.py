@@ -1,23 +1,20 @@
 import dash
-import pandas as pd
-import plotly.express as px
-import dash_daq as daq
-import dash_bootstrap_components as dbc
-from dash import Input, Output, State, html, dcc
+from dash import html, dcc
 import Plotting_functions_Management
 import Plotting_functions_Settings
 import Plotting_functions_Inventory
 import Plotting_functions_Leadtimes
-import plotly.graph_objects as go
-from dash.dependencies import Input, Output
-import json
-
-import Functions
-import Pagelayouts
 from callbacks import get_callbacks
-import main_simulation
-import Plotting_functions_Extra
-import Load_inputsettings
+from Simulationfiles import Load_inputsettings, main_simulation
+
+#currentpath = os.getcwd()
+#VSMimagefile_path = currentpath + '\VSMvisualizationMatrasses.png'
+VSMimagefile_path = '../VSMvisualizationMatrasses.png'
+#VSMimagefile_path = 'VSMvisualizationMatrasses.jpg'
+
+# from PIL import Image
+# img = Image.open(VSMimagefile_path)
+# img.show()
 
 settingdistibution_dict = Load_inputsettings.load_settings()
 
@@ -31,14 +28,16 @@ Inventory_fig_dict = Plotting_functions_Inventory.get_Inventory_figures(measures
 
 Leadtimes_fig_dict = Plotting_functions_Leadtimes.get_Leadtimes_figures(finished_orders_df, measures)
 
-sortfinisheddf = finished_orders_df.sort_values('total process time', ascending=False)
+sortfinisheddf = finished_orders_df.sort_values('total queue time', ascending=False)
+
+
 
 ## MAKE APP
 
-external_stylesheets = [dbc.themes.BOOTSTRAP]
+#external_stylesheets = [dbc.themes.BOOTSTRAP]
 
 app = dash.Dash(__name__,
-                external_stylesheets=external_stylesheets
+                #external_stylesheets=external_stylesheets
                 )
 
 app.layout = html.Div([
@@ -52,6 +51,7 @@ app.layout = html.Div([
                             html.Div([dcc.Store(id='totaltime', storage_type='session', data=totaltime),]),
                             html.Div([dcc.Store(id='settingdistibution_dict', storage_type='session', data=settingdistibution_dict),]),
                             html.Div([dcc.Store(id='sortfinisheddf', storage_type='session', data=sortfinisheddf.to_json(orient="split")),]),
+                            html.Div([dcc.Store(id= 'VSMfilepath', storage_type='session', data = VSMimagefile_path),]),
                             html.Div([dcc.Store(id='Mananger_fig_dict', storage_type='session', data=Mananger_fig_dict),]),
                             html.Div([dcc.Store(id='Settings_fig_dict', storage_type='session', data=Settings_fig_dict),]),
                             html.Div([dcc.Store(id='Inventory_fig_dict', storage_type='session', data=Inventory_fig_dict),]),

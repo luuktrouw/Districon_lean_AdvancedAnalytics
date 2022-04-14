@@ -5,20 +5,11 @@ Supplier-> inv-> productionstep A-> inv-> productionstep B-> inv-> productionste
 The production steps each have certain distribution of lead times (for example N(4,2))
 Everything is in seconds
 '''
-import Simulation_event_functions
 import math
-import plotly.express as px
-import plotly.graph_objects as go
-import Simulation_event_functions
-import time
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
-import statistics
+from Simulationfiles import Simulation_event_functions
 import pandas as pd
-import Plotting_functions_Extra
-import Functions
-import Functions_get_info
+from Dash_plotlyfiles import Functions
+from Simulationfiles import Functions_get_info
 
 
 
