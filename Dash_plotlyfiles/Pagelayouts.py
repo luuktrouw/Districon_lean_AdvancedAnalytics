@@ -104,7 +104,12 @@ def get_pagelayout_inventory(Inventory_fig_dict):
     # the headline of the page is made below
     headline = html.H1("Inventory results", style={'text-align': 'center'})
 
-    # The first row contains two figures in two columns, the fractions of disruptions in the first and the average stock level in the second
+    # For the disruption fractions of process steps, a dropdown is made to be able to select the step of desire
+    dropdown_workstate_fractions = dcc.Dropdown(id = 'select work state fraction process step', options = [{'label': 'Staal buigen', 'value': 0},
+                              {'label': 'Staal koppelen', 'value': 1},{'label': 'Omhulsel maken', 'value': 2}], multi = False,
+                            value = 0,)
+
+    # The first row contains two figures in two columns, the fractions of disruptions in the first and fraction of capacity the process steps used
     row1_inventory = dbc.Row(
         [
             dbc.Col([
@@ -113,7 +118,8 @@ def get_pagelayout_inventory(Inventory_fig_dict):
                     ],  style={'width': '40%'}),
             dbc.Col([
                         html.H5("average stock levels V alle materials", style={'text-align': 'center'}),
-                        dcc.Graph(id='average stock levels', figure=Inventory_fig_dict['total inventory per step']),
+                        dropdown_workstate_fractions,
+                        dcc.Graph(id='work state fractions process step', figure={}),
                     ],  style={'width': '40%'}),
         ],
     )

@@ -69,51 +69,31 @@ def plot_stocklevels_through_time(timeseriesstocklevel):
 
     return fig
 
-# This figure plots the level of inventory of one process step in a violin plot against the fraction of time.
-# It does this in a violin or box plot.
-# all inventories at a certain prodcution step combined, so that the capacity of the warehouse can be investigated (weights not included yet)
-def total_inventory_per_step(timeseriesstocklevel):
-    # first it loops over the time series of the stock levels and determine the how long it has been in that state
-    totalstocklevels = {}
-    for i in timeseriesstocklevel.keys():
-        for j in range(0,len(timeseriesstocklevel[i])-1 , 2 ):
-            if timeseriesstocklevel[i][j][0] in totalstocklevels.keys():
-                totalstocklevels[timeseriesstocklevel[i][j][0]] += timeseriesstocklevel[i][j+1][1] - timeseriesstocklevel[i][j][1]
-            else:
-                totalstocklevels[timeseriesstocklevel[i][j][0]] = timeseriesstocklevel[i][j + 1][1] - timeseriesstocklevel[i][j][1]
-    print(totalstocklevels)
-    # afterwards (THIS TAKES LONG FOR LARGE INSTANCES, SO look for solution) it makes one data point for each unit of time in a certain state
-    # and plots it in a violin/boxplot afterwards, this is a very long list so takes long. Afterwards returns the figure of one process step
-    violindata = [i  for i in totalstocklevels.keys() for j in range(int(totalstocklevels[i]/10))]
-
-    Step_names = ["inventory"]
-
-    fig = go.Figure()
-
-    #### violin below
-    # for stepname in Step_names:
-    #     fig.add_trace(go.Violin(x=finished_order_df[stepname],
-    #                             name=stepname,
-    #                             box_visible=True,
-    #                             meanline_visible=True))
-
-    #### boxplot below
-    for stepname in Step_names:
-        fig.add_trace(go.Box(y=violindata,
-                                name=stepname,
-                                #meanline_visible=True,
-                             ))
-
-    fig.show()
-
+# This function plots the fraction of time that the process step staal buigen is working on x products (so ranging from 0 to the capacity)
+# with the plotly bar chart function
+def plotworkstates_fractions(work_state_times):
+    # first the function makes a list of the workstates with the time the step has been in that workstate, afterwards it simply makes a bar chart
+    workstates = []
+    fractions = []
+    totalvalues = sum(work_state_times.values())
+    for i in work_state_times.keys():
+        workstates.append(i)
+        fractions.append(round(work_state_times[i]/totalvalues,2))
+    fig = px.bar(x=workstates, y=fractions, text_auto= True)
     return fig
+
 
 # This function calls the functions which have no callback, and stores them in a dictionary so that they only have to be loaded once
 def get_Inventory_figures(measures, totaltijd):
     Inventory_fig_dict = {}
 
+    # create an dictionary for all work state fractions options for each process step to save all option figures
+    Inventory_fig_dict['workstate fractions'] = {}
+
     Inventory_fig_dict['frac out of order'] = make_barchart_disruptionfracs(measures, totaltijd)
-    Inventory_fig_dict['total inventory per step'] = total_inventory_per_step(measures['stock levels']['raw materials'])
+    Inventory_fig_dict['workstate fractions']['staal buigen'] = plotworkstates_fractions(measures['workstate times'][0])
+    Inventory_fig_dict['workstate fractions']['staal koppelen'] = plotworkstates_fractions(measures['workstate times'][1])
+    Inventory_fig_dict['workstate fractions']['omhulsel maken'] = plotworkstates_fractions(measures['workstate times'][2])
 
     return Inventory_fig_dict
 

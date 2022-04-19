@@ -46,14 +46,12 @@ app = dash.Dash(__name__,
 # afterwards it makes the simplistic layout of the app
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-
-    # the app structure is placed in a loading component, to make sure the loading sign is displayed if a new page is loaded
+    # the first component is the page component, where the pages are loaded in using the callbacks
+    # this page is everything which is displayed in the dashboard (and the page can be changed of course)
+    html.Div([html.Div(id='page-content')]),
+    # the app Store components are placed in a loading component, to make sure the loading sign is displayed if a new simulation is loaded
     dcc.Loading(
                 children= [
-                            # the first component is the page component, where the pages are loaded in using the callbacks
-                            # this page is everything which is displayed in the dashboard (and the page can be changed of course)
-                            html.Div([html.Div(id='page-content')]),
-
                             # further more there are some Store components, to store certain data
                             # by storing the data, we can use them in the callbacks, without having to run the simulation again
                             html.Div([dcc.Store(id='finishedorderdf', storage_type='session', data = finished_orders_df.to_json(orient="split")),]),

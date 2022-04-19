@@ -5,54 +5,44 @@ import plotly.graph_objects as go
 This file contains plotting functions which are not used in the dash dashboard, but can be added if wanted
 '''
 
-# This function plots the fraction of time that the process step staal buigen is working on x products (so ranging from 0 to the capacity)
-# with the plotly bar chart function
-def plotworkstates_fractions_staalbuigen(work_state_times):
-    # first the function makes a list of the workstates with the time the step has been in that workstate, afterwards it simply makes a bar chart
-    workstates_staalbuigen = []
-    values_staalbuigen = []
-    totalvaluesstaalbuigen = sum(work_state_times.values())
-    for i in work_state_times.keys():
-        workstates_staalbuigen.append(i)
-        values_staalbuigen.append(work_state_times[i]/totalvaluesstaalbuigen)
-    fig1 = px.bar(dict(workstates_staalbuigen = workstates_staalbuigen, values_staalbuigen =values_staalbuigen), x='workstates_staalbuigen', y='values_staalbuigen')
-    fig1.show()
+# This figure plots the level of inventory of one process step in a violin plot against the fraction of time.
+# It does this in a violin or box plot.
+# all inventories at a certain prodcution step combined, so that the capacity of the warehouse can be investigated (weights not included yet)
+def total_inventory_per_step(timeseriesstocklevel):
+    # first it loops over the time series of the stock levels and determine the how long it has been in that state
+    totalstocklevels = {}
+    for i in timeseriesstocklevel.keys():
+        for j in range(0,len(timeseriesstocklevel[i])-1 , 2 ):
+            if timeseriesstocklevel[i][j][0] in totalstocklevels.keys():
+                totalstocklevels[timeseriesstocklevel[i][j][0]] += timeseriesstocklevel[i][j+1][1] - timeseriesstocklevel[i][j][1]
+            else:
+                totalstocklevels[timeseriesstocklevel[i][j][0]] = timeseriesstocklevel[i][j + 1][1] - timeseriesstocklevel[i][j][1]
+    print(totalstocklevels)
+    # afterwards (THIS TAKES LONG FOR LARGE INSTANCES, SO look for solution) it makes one data point for each unit of time in a certain state
+    # and plots it in a violin/boxplot afterwards, this is a very long list so takes long. Afterwards returns the figure of one process step
+    violindata = [i  for i in totalstocklevels.keys() for j in range(int(totalstocklevels[i]/10))]
 
-# This function plots the fraction of time that the process step staal koppelen is working on x products (so ranging from 0 to the capacity)
-# with the plotly bar chart function
-def plotworkstates_fractions_staalkoppelen(work_state_times):
-    # first the function makes a list of the workstates with the time the step has been in that workstate, afterwards it simply makes a bar chart
-    workstates_staalkoppelen = []
-    values_staalkoppelen = []
-    totalvaluesstaalkoppelen = sum(work_state_times.values())
-    for i in work_state_times.keys():
-        workstates_staalkoppelen.append(i)
-        values_staalkoppelen.append(work_state_times[i]/totalvaluesstaalkoppelen)
-    fig2 = px.bar(dict(workstates_staalkoppelen = workstates_staalkoppelen, values_staalkoppelen =values_staalkoppelen), x='workstates_staalkoppelen', y='values_staalkoppelen')
-    fig2.show()
+    Step_names = ["inventory"]
 
-# This function plots the fraction of time that the process step omhulsel maken is working on x products (so ranging from 0 to the capacity)
-# with the plotly bar chart function
-def plotworkstates_fractions_omhulselmaken(work_state_times):
-    # first the function makes a list of the workstates with the time the step has been in that workstate, afterwards it simply makes a bar chart
-    workstates_omhulselmaken = []
-    values_omhulselmaken = []
-    totalvaluesomhulselmaken = sum(work_state_times.values())
-    for i in work_state_times.keys():
-        workstates_omhulselmaken.append(i)
-        values_omhulselmaken.append(work_state_times[i]/totalvaluesomhulselmaken)
-    fig3 = px.bar(dict(workstates_omhulselmaken = workstates_omhulselmaken, values_omhulselmaken =values_omhulselmaken), x='workstates_omhulselmaken', y='values_omhulselmaken')
-    fig3.show()
+    fig = go.Figure()
 
-# This function plots the waiting time of orders before the staal buigen step in a histogram
-# with the plotly histogram chart function
-def wachttijd_voor_staal_buigen(finishedorders):
-    # the funtion makes a list with the waiting times of all orders before staal buigen.
-    wachttijd_lijst = []
-    for i in range(len(finishedorders)):
-        wachttijd_lijst.append(finishedorders[i]['tijd inventory staal buigen'])
-    fig4 = px.histogram(dict(wachttijd_lijst = wachttijd_lijst), x = 'wachttijd_lijst')
-    fig4.show()
+    #### violin below
+    # for stepname in Step_names:
+    #     fig.add_trace(go.Violin(x=finished_order_df[stepname],
+    #                             name=stepname,
+    #                             box_visible=True,
+    #                             meanline_visible=True))
+
+    #### boxplot below
+    for stepname in Step_names:
+        fig.add_trace(go.Box(y=violindata,
+                                name=stepname,
+                                #meanline_visible=True,
+                             ))
+
+    fig.show()
+
+    return fig
 
 # This function makes a table of the 'Statistics' in the VSM, namely the throughput times of all inventory steps and process steps with its quantiles
 def make_fig_VSM_statistics(means, lower_5_quantiles, upper_95_quantiles):

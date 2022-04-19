@@ -34,6 +34,16 @@ def get_callbacks(app):
         figure = Plotting_functions_Inventory.plot_stocklevels_through_time(newmeasures['stock levels'][option_slctd[0]][option_slctd[1]])
         return figure
 
+    # The callback below updates the fraction of time in each work state for a certain process. It's input is the corresponding of process steps
+    @app.callback(Output(component_id= 'work state fractions process step', component_property= 'figure'),
+                  [Input(component_id='select work state fraction process step', component_property= 'value')],
+                  [State('measures', 'data')])
+    def update_workstate_fraction_perstep(option_slctd, newmeasures):
+        # it calls the function which plots the work state fractions using the measures state variable and returns this figure
+        figure = Plotting_functions_Inventory.plotworkstates_fractions(newmeasures['workstate times'][option_slctd])
+        return figure
+
+
     # The callback below updates the throughput time histogram of the process steps, it's input is the corresponding dropwdown of process steps
     @app.callback(Output(component_id='process measure', component_property='figure'),
                   [Input(component_id='select measure', component_property='value')],
