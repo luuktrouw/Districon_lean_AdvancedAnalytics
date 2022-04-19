@@ -1,5 +1,11 @@
 from dash import dash_table
 
+'''
+This file makes all figures which are meant to be on the settings page. 
+It ends with the get_Settings_figures function, which calls each function and stores them in a dictionary so they can be called when needed
+'''
+
+# This function makes an adjustable table (editable) with the measures of the process steps using the dash_table.DataTable function
 def make_fig_editablespeelveldprocessschakels(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -42,6 +48,7 @@ def make_fig_editablespeelveldprocessschakels(settingdistibution_dict):
 
     return fig_table_speelveldprocessschakels
 
+# This function makes an adjustable table (editable) with the measures of the breakdowns using the dash_table.DataTable function
 def make_fig_editablespeelveldbreakdowns(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -84,6 +91,7 @@ def make_fig_editablespeelveldbreakdowns(settingdistibution_dict):
 
     return fig_table_speelveldbreakdowns
 
+# This function makes an adjustable table (editable) with the measures of the orders using the dash_table.DataTable function
 def make_fig_editablespeelveldorders(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -123,6 +131,7 @@ def make_fig_editablespeelveldorders(settingdistibution_dict):
 
     return fig_table_speelveldorders
 
+# This function makes an adjustable table (editable) with the measures of the supply using the dash_table.DataTable function
 def make_fig_editablespeelveldsupply(settingdistibution_dict):
     headercontent = ['Proces stap', 'Verdeling', 'based on historical data?', 'Mean', 'stdev']
 
@@ -202,7 +211,7 @@ def make_fig_editablespeelveldsupply(settingdistibution_dict):
 
     return fig_table_speelveldsupply
 
-
+# This function calls the functions which have no callback, and stores them in a dictionary so that they only have to be loaded once
 def get_Settings_figures(settingdistibution_dict):
     Settings_fig_dict = {}
 

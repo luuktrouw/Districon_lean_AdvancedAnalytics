@@ -3,6 +3,15 @@ import datetime
 import plotly.graph_objects as go
 import Plotting_functions_Management
 
+'''
+This file makes all figures which are meant to be on the Lead Times page. 
+It ends with the get_Leadtimes_figures function, which calls each function and stores them in a dictionary so they can be called when needed
+'''
+
+# This function plots a violin plot of the throughout times of all inventory steps and process steps
+# It is handed a finished order dataframe with all the data of those orders. A boxplot or violin plot can both be used by uncommenting one
+# If the one filters the longest order out, a shorter dataframe is handed in.
+# it plots everything in chart using the plotly bar/violin chart function and returns this figure
 def make_violin_VSM_statistics(finished_order_df):
 
     Step_names = ["tijd inventory staal buigen", 'tijd staal buigen', 'tijd inventory staal koppelen', 'tijd staal koppelen',
@@ -26,11 +35,14 @@ def make_violin_VSM_statistics(finished_order_df):
 
     return fig
 
+# This function plots the fraction of each reason for waiting times for a certain process step in a pie chart
+# The input is the finished order dataframe with all its data and the specific process step and returns the figrue afterwards
 def plot_fractions_wait_time_reasons_perschakel(finished_order_df, schakel):
     longestprocesstimesdf = finished_order_df
     percentage = 100
 
-    # neemt totaal van alle processen, dus niet specifiek voor staal buigen bijvoorbeeld
+    # The disruption times of the specific steps are calculated by looping over all orders.
+    # if the whole process is wanted, it calls the plot_fractions_wait_time_reasons function with 100% of the orders in Plotting_functions_Management.py
     sum_other_wait_time = 0
     sum_wait_time_shortage_supply = 0
     sum_wait_time_breakdowns = 0
@@ -61,14 +73,20 @@ def plot_fractions_wait_time_reasons_perschakel(finished_order_df, schakel):
     elif schakel == 'total process':
         return Plotting_functions_Management.plot_fractions_wait_time_reasons(finished_order_df, percentage)
 
+    # the other wait times are simply the remaining bits which can not be explained by breakdowns or supply shortage
     sum_other_wait_time -= sum_wait_time_shortage_supply + sum_wait_time_breakdowns
     print([sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply])
 
+    # after all wait times are received it plots them in a pie chart using the plotly pie chart function
     fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
 
     return fig
 
+# This figures plots all disruption during the simulation in a gantt chart.
+# Its input is the measures dictionary and it used the plotly timeline function to return a figure
 def plot_gantt_disruptions(measures):
+    # A dictionary with all disruption names, the beginning of each interval and the ending of each interval is made
+    # This is done by looping over the measures of all disruptions.
     dict_disruption_periods = {'disruptions_names': [], 'disruptions_begins':[], 'disruptions_ends':[]}
 
     #append dict with the breakdown periods
@@ -103,16 +121,19 @@ def plot_gantt_disruptions(measures):
         dict_disruption_periods['disruptions_begins'].append(datetime.datetime.fromtimestamp(measures['supply shortage periods']['omhulsel maken'][i][0]))
         dict_disruption_periods['disruptions_ends'].append(datetime.datetime.fromtimestamp(measures['supply shortage periods']['omhulsel maken'][i][1]))
 
+    # afterwards all disruptions are plotted using the ploty timeline function in one figure
     fig_all_disruptions_gantt = px.timeline(dict_disruption_periods,
                                             x_start = dict_disruption_periods['disruptions_begins'],
                                             x_end=dict_disruption_periods['disruptions_ends'],
                                             y = dict_disruption_periods['disruptions_names'])
 
-    #fig_all_disruptions_gantt.show()
-
     return fig_all_disruptions_gantt
 
+# This function plots all disruptions and processing times which happened in the timespan of one certain order
+# The input is the ordername and the finished order dataframe, which also contains the info of all disruptions during orders
+# it returns a gantt chart with all events of that order
 def plot_gantt_per_order(finishedordersdf, ordername):
+    # it takes the row of the dataframe which is about the specific order
     dict_disruption_periods = {'disruptions_names': [], 'disruptions_begins': [], 'disruptions_ends': []}
     orderdf = finishedordersdf.loc[finishedordersdf['orderID'] == ordername]
     #orderdf = finishedordersdf[finishedordersdf.orderID == ordername]
@@ -172,13 +193,14 @@ def plot_gantt_per_order(finishedordersdf, ordername):
                                             x_end=dict_disruption_periods['disruptions_ends'],
                                             y = dict_disruption_periods['disruptions_names'])
 
-    #set range as receiving order until finishing order
-    fig_disruptions_order_gantt.update_xaxes(range = [datetime.datetime.fromtimestamp(orderdf['time received']), datetime.datetime.fromtimestamp(orderdf['finish time'])])
-
-    #fig_disruptions_order_gantt.show()
+    # one could set specific range as receiving order until finishing order
+    #fig_disruptions_order_gantt.update_xaxes(range = [datetime.datetime.fromtimestamp(orderdf['time received']), datetime.datetime.fromtimestamp(orderdf['finish time'])])
 
     return fig_disruptions_order_gantt
 
+# This function calls the functions which have no callback, and stores them in a dictionary so that they only have to be loaded once
+# for the fraction wait times per schakel and the throughput times per schakel figures, the callbacks have only choice of limited options
+# therefore, the figures for all options are stored for those callbacks
 def get_Leadtimes_figures(finished_order_df, measures):
     Leadtimes_fig_dict = {}
     Leadtimes_fig_dict['fraction wait times per schakel'] = {}

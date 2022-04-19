@@ -1,6 +1,14 @@
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 
+'''
+This file contains the functions which make the layout of the pages. 
+Each page has its own function which structures the page and gives the figures id's and possibly figures,
+which are imported by this corresponding input dictionary which contains the figures
+All pages are constructed with dash using html to structure the page and using dbc and dcc components
+'''
+
+# The navigation bar on top of all pages is designed below using the NavbarSimple functions from dash_bootstrap_components
 navbar = dbc.NavbarSimple(
         children=[
             dbc.NavItem(dbc.NavLink("VSM Visualization", href="VSM")),
@@ -10,12 +18,16 @@ navbar = dbc.NavbarSimple(
             dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
         ],
         id = 'navbarsimple',
-        color="primary"
-    )
+        brand = 'DISTRICON (bv of RHDHV)',
+        color=	'#64be28',
+        )
 
+# This function makes the layout of the management page and returns that page
 def get_pagelayout_manager(Mananger_fig_dict):
+    # the headline of the page is made below
     headline = html.H1("Management Summary", style={'text-align': 'center'})
 
+    # The first row of this page consists of 4 cards, which are loaded into the first row in different columns, using the cards from Manager_fig_dict input
     row1_manager = dbc.Row(
         [
             dbc.Col(dbc.Card(Mananger_fig_dict['card deadlines made'], color="primary", outline=True)),
@@ -24,7 +36,7 @@ def get_pagelayout_manager(Mananger_fig_dict):
             dbc.Col(dbc.Card(Mananger_fig_dict['card lateness'], color="primary", outline=True)),
         ]
     )
-
+    # second row consists of two columns, one with two other cards and one with the pie chart of queueing reasons and a sliders to filter out an x% of worst orders
     row2_manager = dbc.Row(
         [
             dbc.Col(
@@ -41,17 +53,23 @@ def get_pagelayout_manager(Mananger_fig_dict):
             ),
         ]
     )
+
+    # The total page structure is made below using the previous components
     page_manager = html.Div([navbar,headline, row1_manager,  row2_manager, ])
     return page_manager
 
+# This function makes the layout of the settings page and returns that page
 def get_pagelayout_settings(Settings_fig_dict):
+    # the headline of the page is made below
     headline = html.H1("Settings", style={'text-align': 'center'})
 
+    # The resimulate button is placed on top of the page, inside the loading component to make sure the loading sign is displayed if the button is clicked
     resim_button = dcc.Loading(html.Div(
         dbc.Button("RESIMULATE", color="primary", id = 'resimulate button', n_clicks=0),
     )
     )
 
+    #the second row consists of two editables in two columns
     row2_settings = dbc.Row(
         [
             dbc.Col([
@@ -64,7 +82,7 @@ def get_pagelayout_settings(Settings_fig_dict):
                     ],width={"size": 6, "offset": 0}),
         ]
     )
-
+    #the third row consists of the remaining two editables in two columns
     row3_settings = dbc.Row(
         [
             dbc.Col([
@@ -77,13 +95,30 @@ def get_pagelayout_settings(Settings_fig_dict):
                 ],width={"size": 6, "offset": 0}),
         ]
     )
-
+    # The total page structure is made below using the previous components
     page_settings = html.Div([navbar, headline,resim_button, row2_settings,row3_settings])
     return page_settings
 
+# This function makes the layout of the iventory page and returns that page
 def get_pagelayout_inventory(Inventory_fig_dict):
+    # the headline of the page is made below
     headline = html.H1("Inventory results", style={'text-align': 'center'})
 
+    # The first row contains two figures in two columns, the fractions of disruptions in the first and the average stock level in the second
+    row1_inventory = dbc.Row(
+        [
+            dbc.Col([
+                        html.H5("fractie tijd out of order", style={'text-align': 'center'}),
+                        dcc.Graph(id='outofstockfractie', figure=Inventory_fig_dict['frac out of order']),
+                    ],  style={'width': '40%'}),
+            dbc.Col([
+                        html.H5("average stock levels V alle materials", style={'text-align': 'center'}),
+                        dcc.Graph(id='average stock levels', figure=Inventory_fig_dict['total inventory per step']),
+                    ],  style={'width': '40%'}),
+        ],
+    )
+
+    # For the time series of stock levels, a dropdown is made to be able to select the material of desire
     dropdown_materials = dcc.Dropdown(id='select stock graph', options=[{'label': 'raw material - stalen stangen', 'value': ['raw materials','stalen stangen']},
                                                            {'label': 'raw material - koppeldraad', 'value': ['raw materials','koppeldraad']},
                                                            {'label': 'raw material - soft stuffing', 'value': ['raw materials','soft stuffing']},
@@ -97,19 +132,7 @@ def get_pagelayout_inventory(Inventory_fig_dict):
                                                            ], multi=False,
                  value=['raw materials','stalen stangen'], style={'width': '100%'})
 
-    row1_inventory = dbc.Row(
-        [
-            dbc.Col([
-                        html.H5("fractie tijd out of order", style={'text-align': 'center'}),
-                        dcc.Graph(id='outofstockfractie', figure=Inventory_fig_dict['frac out of order']),
-                    ],  style={'width': '40%'}),
-            dbc.Col([
-                        html.H5("average stock levels V alle materials", style={'text-align': 'center'}),
-                        dcc.Graph(id='average stock levels', figure={}),
-                    ],  style={'width': '40%'}),
-        ],
-    )
-
+    # the second row consists of one column, containing the dropdown and the time series graph below
     row2_inventory = dbc.Row(
         [
             dbc.Col(
@@ -121,22 +144,28 @@ def get_pagelayout_inventory(Inventory_fig_dict):
             ),
         ],
     )
-
+    # The total page structure is made below using the previous components
     page_inventory = html.Div([navbar, headline, row1_inventory, row2_inventory, ])
 
     return page_inventory
 
+# This function makes the layout of the lead times page and returns that page
 def get_pagelayout_leadtimes(Leadtimes_fig_dict):
+    # the headline of the page is made below
     headline = html.H1("Lead and wait time results", style={'text-align': 'center'})
 
+    # For the throughput times of process steps, a dropdown is made to be able to select the step of desire
     dropdown_schakel_leadtimes = dcc.Dropdown(id = 'select measure', options = [{'label': 'Total throughout time', 'value': 1},{'label': 'Total queueing time', 'value': 2},
                               {'label': 'Queueing time staal buigen', 'value': 3},{'label': 'Queueing time staal koppelen', 'value': 4},{'label': 'Queueing time omhulsel maken', 'value': 5}], multi = False,
                             value = 1,)
 
+    # For the disruption fractions of process steps, a dropdown is made to be able to select the step of desire
     dropdown_schakel_waittimes = dcc.Dropdown(id = 'select schakel waittimes', options = [{'label': 'Total process', 'value': 'total process'},{'label': 'Staal buigen', 'value': 'staal buigen'},
                               {'label': 'Staal koppelen', 'value': 'staal koppelen'},{'label': 'Omhulsel maken', 'value': 'omhulsel maken'}], multi = False,
                             value = 'staal buigen',)
 
+    # The first row consists of the lead times violin plot of all process steps, below the plot is a slider
+    # which indicates the percentage of worst lead times filtered out
     row1_leadtimes = dbc.Row(
         [
             dbc.Row(dcc.Graph(id='VSMstatistics', figure=Leadtimes_fig_dict['VSM statistics times'])),
@@ -144,6 +173,9 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
         ]
     )
 
+    # The second row consists of two columns, each with a dropdown and a graph
+    # The first column is the lead times of process steps
+    # The second column is the wait time fractions at each process step
     row2_leadtimes = dbc.Row(
         [
             dbc.Col(
@@ -163,6 +195,9 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
         ]
     )
 
+    # The third row consists of two columns,
+    # the first is the gantt plot of one order with all its events
+    # The second one is the gantt plot of all disruptions in the simulation horizon
     row3_leadtimes = dbc.Row(
         [
             dbc.Col(
@@ -181,15 +216,18 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
             ),
         ]
     )
-
+    # The total page structure is made below using the previous components
     page_leadtimes = html.Div([navbar, headline, row1_leadtimes, row2_leadtimes,row3_leadtimes, ])
     return page_leadtimes
 
+# This function makes the layout of the value stream map page and returns that page
 def get_pagelayout_VSMpicture(VSMfilepath):
+    # the headline of the page is made below
     headline = html.H1("VSM Visualization", style={'text-align': 'center'})
 
+    # This page consists only of a picture, which is loaded in below
     VSMpicture = html.Img(src="../VSMvisualizationMatrasses.jpg")
-
+    # The total page structure is made below using the previous components
     page_VSM = html.Div([navbar, headline,VSMpicture])
     return page_VSM
 
