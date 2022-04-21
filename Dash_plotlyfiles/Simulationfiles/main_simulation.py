@@ -8,7 +8,7 @@ Everything is in seconds
 import math
 from Simulationfiles import Simulation_event_functions
 import pandas as pd
-from Dash_plotlyfiles import Functions
+import Functions
 from Simulationfiles import Functions_get_info
 
 
