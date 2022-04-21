@@ -135,7 +135,7 @@ def get_callbacks(app):
         # The link pathname determines the if statement it goes in.
         # with the pathname, a page of the pagelayout is called and is returned
         if pathname == '/VSM':
-            return Pagelayouts.get_pagelayout_manager(Mananger_fig_dict)
+            return Pagelayouts.get_pagelayout_VSMpicture(VSMfilepath)
         elif pathname == '/Manager':
             return Pagelayouts.get_pagelayout_manager(Mananger_fig_dict)
         elif pathname == '/Settings':

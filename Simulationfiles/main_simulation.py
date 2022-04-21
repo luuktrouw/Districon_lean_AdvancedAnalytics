@@ -115,7 +115,7 @@ def runsimulation(settingdistibution_dict):
     instance = instancezero()
 
     # the time limit for how long the simulation will run
-    timelimit = 4800000
+    timelimit = 48000
 
     # in the next while loop the simulation is performed. it keeps running until the time exceeded the time limit
     # first the next event and the time of the next event are determined from the instance.

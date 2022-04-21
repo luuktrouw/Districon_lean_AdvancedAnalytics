@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.express as px
+import datetime
 import plotly.graph_objects as go
 
 '''
@@ -61,11 +62,16 @@ def make_barchart_disruptionfracs(measures, totaltijd):
 # The input time series should be the time series of the material of interest
 # it uses the plotly lines function for it
 def plot_stocklevels_through_time(timeseriesstocklevel):
+    # CURRENT DATETIME SPECIFIED date NOW
+    now = datetime.datetime.now()
+    timestamp = datetime.datetime.timestamp(now)
     # it makes x (times) values and y (stock levels) values and plots them
-    xas = [timeseriesstocklevel[i][1] for i in range(len(timeseriesstocklevel))]
+    xas = [datetime.datetime.fromtimestamp(timestamp + timeseriesstocklevel[i][1]) for i in range(len(timeseriesstocklevel))]
     yas = [timeseriesstocklevel[i][0] for i in range(len(timeseriesstocklevel))]
     dfforgraph = pd.DataFrame(dict(x = xas,y=yas))
-    fig = px.line(dfforgraph, x="x", y="y", title="timeseries stock levels")
+    fig = px.line(dfforgraph, x="x", y="y")
+    # one could set specific range for one week in seconds
+    fig.update_xaxes(range = [datetime.datetime.fromtimestamp(timestamp), datetime.datetime.fromtimestamp(timestamp + 604800)])
 
     return fig
 

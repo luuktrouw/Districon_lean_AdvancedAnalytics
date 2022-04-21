@@ -9,7 +9,12 @@ All pages are constructed with dash using html to structure the page and using d
 '''
 
 # The navigation bar on top of all pages is designed below using the NavbarSimple functions from dash_bootstrap_components
-navbar = dbc.NavbarSimple(
+Districonpicture = html.Img(
+    src='./assets/Districon_RHDHV_RGB_White_w_Colour_Triangle.png',
+    #className="logo-connekt",
+    style = {'width': '16.66666666%', "background-color": "#024791", 'margin-right': '-12px'}
+)
+navbar1 = dbc.NavbarSimple(
         children=[
             dbc.NavItem(dbc.NavLink("VSM Visualization", href="VSM")),
             dbc.NavItem(dbc.NavLink("Management summary", href="Manager")),
@@ -18,9 +23,16 @@ navbar = dbc.NavbarSimple(
             dbc.NavItem(dbc.NavLink("Lead times", href="Lead_times")),
         ],
         id = 'navbarsimple',
-        brand = 'DISTRICON (bv of RHDHV)',
-        color=	'#64be28',
+        # brand = 'Districon',
+        # brand_external_link=True,
+        # brand_href='https://www.districon.com/',
+        color=	'#024791',
+        style = {'height': '100%', 'margin-right': '-12px'}
         )
+
+navbar = dbc.Row(
+    [Districonpicture, dbc.Col(navbar1, width = 10)]
+)
 
 # This function makes the layout of the management page and returns that page
 def get_pagelayout_manager(Mananger_fig_dict):
@@ -41,14 +53,19 @@ def get_pagelayout_manager(Mananger_fig_dict):
         [
             dbc.Col(
                 [
-                dbc.Row(dbc.Card(Mananger_fig_dict['card queue time'], color="primary", outline=True)),
-                dbc.Row(dbc.Card(Mananger_fig_dict['card producing time'], color="primary", outline=True)),
+                dbc.Row(dbc.Card(Mananger_fig_dict['card queue time'], color="primary", outline=True, )),
+                dbc.Row(dbc.Card(Mananger_fig_dict['card producing time'], color="primary", outline=True, style={"width": "18rem"},)),
                 ]
             ),
             dbc.Col(
                 [
                 dcc.Slider(0,100, id = 'slider disruption measure percentage', value = 5),
-                dcc.Graph(id = 'Pie reason queue', figure ={}),
+                dcc.Loading(
+                            children= [
+                                        dcc.Graph(id = 'Pie reason queue', figure ={}),
+                                      ],
+                            type = 'circle',
+                            ),
                 ]
             ),
         ]
@@ -117,7 +134,7 @@ def get_pagelayout_inventory(Inventory_fig_dict):
                         dcc.Graph(id='outofstockfractie', figure=Inventory_fig_dict['frac out of order']),
                     ],  style={'width': '40%'}),
             dbc.Col([
-                        html.H5("average stock levels V alle materials", style={'text-align': 'center'}),
+                        html.H5("Amount of capacity utilized fractions", style={'text-align': 'center'}),
                         dropdown_workstate_fractions,
                         dcc.Graph(id='work state fractions process step', figure={}),
                     ],  style={'width': '40%'}),
@@ -143,7 +160,7 @@ def get_pagelayout_inventory(Inventory_fig_dict):
         [
             dbc.Col(
                 [
-                    html.H5("Stock level verloop", style={'text-align': 'center'}),
+                    html.H5("Time Series Stock Level", style={'text-align': 'center'}),
                     dropdown_materials,
                     dcc.Graph(id='stock level graph', figure={}) ,
                 ]
@@ -229,11 +246,17 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
 # This function makes the layout of the value stream map page and returns that page
 def get_pagelayout_VSMpicture(VSMfilepath):
     # the headline of the page is made below
-    headline = html.H1("VSM Visualization", style={'text-align': 'center'})
+    headline = html.H1("Value Stream Map Visualization", style={'text-align': 'center'})
 
-    # This page consists only of a picture, which is loaded in below
-    VSMpicture = html.Img(src="../VSMvisualizationMatrasses.jpg")
-    # The total page structure is made below using the previous components
+    VSMpicture = html.Div([
+        html.Img(
+        src='./assets/VSMvisualizationMatrasses.png',
+        #className="logo-connekt",
+        style = {'width': '70%',}
+        )],
+        style = {'textAlign': 'center'})
+
+
     page_VSM = html.Div([navbar, headline,VSMpicture])
     return page_VSM
 

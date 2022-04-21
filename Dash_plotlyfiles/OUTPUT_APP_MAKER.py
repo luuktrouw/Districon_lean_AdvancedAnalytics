@@ -13,7 +13,7 @@ It does this by running the simulation using python, and creating a dashboard us
 '''
 
 # First it loads in the path name for the VSM image (to plot it later on
-VSMimagefile_path = '../VSMvisualizationMatrasses.png'
+VSMimagefile_path= r"C:\Users\l.trouw\Documents\Pycharm\Lean_simulation\VSMvisualizationMatrasses.png"
 
 # then it loads in the, MANUALLY SET FOR NOW, settings from the load settings file
 settingdistibution_dict = Load_inputsettings.load_settings()

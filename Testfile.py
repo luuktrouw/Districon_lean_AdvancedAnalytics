@@ -1,48 +1,32 @@
-from dash import Dash, dcc, html
-import time
+import plotly.graph_objects as go
+import plotly.io as pio
+from PIL import Image
 
-from dash.dependencies import Input, Output
-import os
-currentpath = os.getcwd()
-app = Dash(__name__)
+# to render in jupyterlab
+#pio.renderers.default = "plotly_mimetype"
 
-app.layout = html.Div(
-    children=[
-        html.H3("Edit text input to see loading state"),
-        dcc.Input(id="loading-input-1", value='Input triggers local spinner'),
-        dcc.Loading(
-            id="loading-1",
-            type="default",
-            children=html.Div(id="loading-output-1")
-        ),
-        html.Img(src = "../VSMvisualizationMatrasses.jpg"),
-        html.Div(
-            [
-                dcc.Input(id="loading-input-2", value='Input triggers nested spinner'),
-                dcc.Loading(
-                    id="loading-2",
-                    children=[html.Div([html.Div(id="loading-output-2")])],
-                    type="circle",
-                )
-            ]
-        ),
-    ],
+# Create figure
+fig = go.Figure()
+
+pyLogo = Image.open(r'C:\Users\l.trouw\Documents\Pycharm\Lean_simulation\VSMvisualizationMatrasses.png')
+
+# Add trace
+fig.add_trace(
+    go.Scatter(x=[0, 0.5, 1, 2, 2.2], y=[1.23, 2.5, 0.42, 3, 1])
 )
 
+fig.add_layout_image(
+        dict(
+            source=pyLogo,
+            xref="x",
+            yref="y",
+            x=0,
+            y=3,
+            sizex=2,
+            sizey=2,
+            sizing="stretch",
+            opacity=0.5,
+            layer="above")
+)
 
-@app.callback(Output("loading-output-1", "children"), Input("loading-input-1", "value"))
-def input_triggers_spinner(value):
-    time.sleep(1)
-    return value
-
-
-@app.callback(Output("loading-output-2", "children"), Input("loading-input-2", "value"))
-def input_triggers_nested(value):
-    j = 0
-    for i in range(10):
-        j += 1
-    return value
-
-
-if __name__ == "__main__":
-    app.run_server(debug=False)
+fig.show()

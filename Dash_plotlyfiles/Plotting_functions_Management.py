@@ -21,11 +21,12 @@ def get_perc_deadlines_met(finished_orders_df):
 
     # below the dash card is made
     card_fracdeadlinesmade =[
-        dbc.CardHeader("Deadlines made"),
+        dbc.CardHeader("Deadlines made", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(str(percentage)+'%', className="card-title"),
-            ]
+                #html.P('. '),
+            ], style = {'textAlign': 'center'}
         ),
     ]
 
@@ -47,11 +48,12 @@ def get_perc_prio_deadlines_met(finished_orders_df):
     else: percentage = 'no simulated priority orders'
     # below the dash card is made
     card_fracpriodeadlinesmade = [
-        dbc.CardHeader("Priority deadlines made"),
+        dbc.CardHeader("Priority deadlines made", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(str(percentage) + '%', className="card-title"),
-            ]
+                html.P(''),
+            ], style = {'textAlign': 'center'}
         ),
     ]
 
@@ -65,12 +67,12 @@ def get_cardtotalthroughput_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total process time'], 1))
     # below the dash card is made
     cardthrougputtime = [
-        dbc.CardHeader("Average throughput time"),
+        dbc.CardHeader("Average throughput time", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(meann, className="card-title"),
                 html.P(quantiles),
-            ]
+            ], style = {'textAlign': 'center'}
         ),
 
     ]
@@ -85,12 +87,12 @@ def get_cardlateness_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['lateness'], 1))
     # below the dash card is made
     cardlatenesstime = [
-        dbc.CardHeader("Average lateness (nu incl on time orders als 0)"),
+        dbc.CardHeader("Average lateness (nu incl on time orders als 0)", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(meann, className="card-title"),
                 html.P(quantiles),
-            ]
+            ], style = {'textAlign': 'center'}
         ),
     ]
 
@@ -104,12 +106,12 @@ def get_cardtotalwaiting_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total queue time'], 1))
     # below the dash card is made
     cardwaitingtime = [
-        dbc.CardHeader("Average queue time"),
+        dbc.CardHeader("Average queue time", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(meann, className="card-title"),
                 html.P(quantiles),
-            ]
+            ], style = {'textAlign': 'center'}
         ),
     ]
 
@@ -123,12 +125,12 @@ def get_cardtotalproducing_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total producing time'], 1))
     # below the dash card is made
     cardproducingtime = [
-        dbc.CardHeader("Average producing time"),
+        dbc.CardHeader("Average producing time", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(meann, className="card-title"),
                 html.P(quantiles),
-            ]
+            ], style = {'textAlign': 'center'}
         ),
     ]
 
