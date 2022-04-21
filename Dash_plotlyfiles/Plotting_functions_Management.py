@@ -21,7 +21,7 @@ def get_perc_deadlines_met(finished_orders_df):
 
     # below the dash card is made
     card_fracdeadlinesmade =[
-        dbc.CardHeader("Deadlines made", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Deadlines Made", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(str(percentage)+'%', className="card-title"),
@@ -48,11 +48,11 @@ def get_perc_prio_deadlines_met(finished_orders_df):
     else: percentage = 'no simulated priority orders'
     # below the dash card is made
     card_fracpriodeadlinesmade = [
-        dbc.CardHeader("Priority deadlines made", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Priority Deadlines Made", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
                 html.P(str(percentage) + '%', className="card-title"),
-                html.P(''),
+                #html.P(''),
             ], style = {'textAlign': 'center'}
         ),
     ]
@@ -67,11 +67,11 @@ def get_cardtotalthroughput_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total process time'], 1))
     # below the dash card is made
     cardthrougputtime = [
-        dbc.CardHeader("Average throughput time", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Average Throughput Time (0.05-0.95 Quantile)", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
-                html.P(meann, className="card-title"),
-                html.P(quantiles),
+                html.P(meann + ' (' + quantiles + ')', className="card-title"),
+                #html.P(quantiles),
             ], style = {'textAlign': 'center'}
         ),
 
@@ -87,11 +87,11 @@ def get_cardlateness_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['lateness'], 1))
     # below the dash card is made
     cardlatenesstime = [
-        dbc.CardHeader("Average lateness (nu incl on time orders als 0)", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Average Lateness (0.05-0.95 Quantile)", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
-                html.P(meann, className="card-title"),
-                html.P(quantiles),
+                html.P(meann + ' (' + quantiles + ')', className="card-title"),
+                #html.P(quantiles),
             ], style = {'textAlign': 'center'}
         ),
     ]
@@ -106,11 +106,11 @@ def get_cardtotalwaiting_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total queue time'], 1))
     # below the dash card is made
     cardwaitingtime = [
-        dbc.CardHeader("Average queue time", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Average Queueing Time (0.05-0.95 Quantile)", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
-                html.P(meann, className="card-title"),
-                html.P(quantiles),
+                html.P(meann + ' (' + quantiles + ')', className="card-title"),
+                #html.P(quantiles),
             ], style = {'textAlign': 'center'}
         ),
     ]
@@ -125,11 +125,11 @@ def get_cardtotalproducing_time(means, lower_5_quantiles, upper_95_quantiles):
                                 round(upper_95_quantiles['total producing time'], 1))
     # below the dash card is made
     cardproducingtime = [
-        dbc.CardHeader("Average producing time", style = {'textAlign': 'center'}),
+        dbc.CardHeader("Average Producing Time (0.05-0.95 Quantile)", style = {'textAlign': 'center'}),
         dbc.CardBody(
             [
-                html.P(meann, className="card-title"),
-                html.P(quantiles),
+                html.P(meann + ' (' + quantiles + ')', className="card-title"),
+                #html.P(quantiles),
             ], style = {'textAlign': 'center'}
         ),
     ]
@@ -168,7 +168,7 @@ def plot_fractions_wait_time_reasons(sortfinisheddf, percentage):
     print([sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply])
 
     # after all wait times are received it plots them in a pie chart using the plotly pie chart function
-    fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
+    fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'])
 
     return fig
 

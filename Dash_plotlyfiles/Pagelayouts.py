@@ -53,13 +53,15 @@ def get_pagelayout_manager(Mananger_fig_dict):
         [
             dbc.Col(
                 [
-                dbc.Row(dbc.Card(Mananger_fig_dict['card queue time'], color="primary", outline=True, )),
-                dbc.Row(dbc.Card(Mananger_fig_dict['card producing time'], color="primary", outline=True, style={"width": "18rem"},)),
+                dbc.Row(dbc.Card(Mananger_fig_dict['card queue time'], color="primary", outline=True, style = {'margin-top': '25px'})),
+                dbc.Row(dbc.Card(Mananger_fig_dict['card producing time'], color="primary", outline=True, style = {'margin-top': '25px'} )),
                 ]
             ),
             dbc.Col(
                 [
-                dcc.Slider(0,100, id = 'slider disruption measure percentage', value = 5),
+                html.H5('Reasons For Wait Times', style={'text-align': 'center'}),
+                html.P('Slider determines figure for worst x percentage of orders', style={'text-align': 'center'}),
+                dcc.Slider(0,100, id = 'slider disruption measure percentage', value = 100),
                 dcc.Loading(
                             children= [
                                         dcc.Graph(id = 'Pie reason queue', figure ={}),
@@ -90,11 +92,11 @@ def get_pagelayout_settings(Settings_fig_dict):
     row2_settings = dbc.Row(
         [
             dbc.Col([
-                    html.H5("speelveld process schakels", style={'text-align': 'center'}),
+                    html.H5("Settings Process Steps", style={'text-align': 'center'}),
                     Settings_fig_dict['editable process schakels']
                     ], width={"size": 6, "offset": 0}),
             dbc.Col([
-                    html.H5("speelveld breakdowns", style={'text-align': 'center'}),
+                    html.H5("Settings Breakdowns", style={'text-align': 'center'}),
                     Settings_fig_dict['editable breakdowns']
                     ],width={"size": 6, "offset": 0}),
         ]
@@ -103,11 +105,11 @@ def get_pagelayout_settings(Settings_fig_dict):
     row3_settings = dbc.Row(
         [
             dbc.Col([
-                html.H5("speelveld orders", style={'text-align': 'center'}),
+                html.H5("Settings Orders", style={'text-align': 'center'}),
                 Settings_fig_dict['editable orders']
                 ],width={"size": 6, "offset":0}),
             dbc.Col([
-                html.H5("speelveld suppliers", style={'text-align': 'center'}),
+                html.H5("Settings Suppliers", style={'text-align': 'center'}),
                 Settings_fig_dict['editable supply']
                 ],width={"size": 6, "offset": 0}),
         ]
@@ -119,7 +121,7 @@ def get_pagelayout_settings(Settings_fig_dict):
 # This function makes the layout of the iventory page and returns that page
 def get_pagelayout_inventory(Inventory_fig_dict):
     # the headline of the page is made below
-    headline = html.H1("Inventory results", style={'text-align': 'center'})
+    headline = html.H1("Inventory Results", style={'text-align': 'center'})
 
     # For the disruption fractions of process steps, a dropdown is made to be able to select the step of desire
     dropdown_workstate_fractions = dcc.Dropdown(id = 'select work state fraction process step', options = [{'label': 'Staal buigen', 'value': 0},
@@ -130,11 +132,11 @@ def get_pagelayout_inventory(Inventory_fig_dict):
     row1_inventory = dbc.Row(
         [
             dbc.Col([
-                        html.H5("fractie tijd out of order", style={'text-align': 'center'}),
+                        html.H5("Fraction Of Time Out Of Order", style={'text-align': 'center'}),
                         dcc.Graph(id='outofstockfractie', figure=Inventory_fig_dict['frac out of order']),
                     ],  style={'width': '40%'}),
             dbc.Col([
-                        html.H5("Amount of capacity utilized fractions", style={'text-align': 'center'}),
+                        html.H5("Amount Of Capacity Utilized Fractions", style={'text-align': 'center'}),
                         dropdown_workstate_fractions,
                         dcc.Graph(id='work state fractions process step', figure={}),
                     ],  style={'width': '40%'}),
@@ -175,7 +177,7 @@ def get_pagelayout_inventory(Inventory_fig_dict):
 # This function makes the layout of the lead times page and returns that page
 def get_pagelayout_leadtimes(Leadtimes_fig_dict):
     # the headline of the page is made below
-    headline = html.H1("Lead and wait time results", style={'text-align': 'center'})
+    headline = html.H1("Lead And Wait Time Results", style={'text-align': 'center'})
 
     # For the throughput times of process steps, a dropdown is made to be able to select the step of desire
     dropdown_schakel_leadtimes = dcc.Dropdown(id = 'select measure', options = [{'label': 'Total throughout time', 'value': 1},{'label': 'Total queueing time', 'value': 2},
@@ -191,8 +193,10 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
     # which indicates the percentage of worst lead times filtered out
     row1_leadtimes = dbc.Row(
         [
-            dbc.Row(dcc.Graph(id='VSMstatistics', figure=Leadtimes_fig_dict['VSM statistics times'])),
+            html.H5("Lead Times Per Process Step", style={'text-align': 'center'}),
+            html.P('Slider filters out x percentage of worst orders', style={'text-align': 'center'}),
             dbc.Row(dcc.Slider(0, 100, id='VSMfilteroutpercentage', value=5)),
+            dbc.Row(dcc.Graph(id='VSMstatistics', figure=Leadtimes_fig_dict['VSM statistics times'])),
         ]
     )
 
@@ -203,14 +207,14 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
         [
             dbc.Col(
                 [
-                    html.H5("Throughput times of the orders", style={'text-align': 'center'}),
+                    html.H5("Throughput Times Per Production Step", style={'text-align': 'center'}),
                     dbc.Row(dropdown_schakel_leadtimes),
                     dbc.Row(dcc.Graph(id = 'process measure', figure ={})),
                 ],  style={'width': '40%'}
             ),
             dbc.Col(
                 [
-                    html.H5("Wait times per schakel", style={'text-align': 'center'}),
+                    html.H5("Reasons For Wait Times Per Production Step", style={'text-align': 'center'}),
                     dbc.Row(dropdown_schakel_waittimes),
                     dbc.Row(dcc.Graph(id = 'schakel wait times', figure ={})),
                 ],  style={'width': '40%'}
@@ -225,7 +229,7 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
         [
             dbc.Col(
                 [
-                    html.H5("Specifieke order verloop", style={'text-align': 'center'}),
+                    html.H5("Events During Specific Order", style={'text-align': 'center'}),
                     dbc.Row(dcc.Input(id = 'input specific order', type = 'text', placeholder= 'type orderID')),
                     dbc.Row(dcc.Graph(id = 'specific order disruptions', figure = {})),
                     #plottingfunctions.plot_gantt_per_order(finished_orders_df, sortfinisheddf.iloc[0]['orderID'])
@@ -233,7 +237,7 @@ def get_pagelayout_leadtimes(Leadtimes_fig_dict):
             ),
             dbc.Col(
                 [
-                    html.H5("All disruption intervals", style={'text-align': 'center'}),
+                    html.H5("All Distruption Intervals", style={'text-align': 'center'}),
                     dcc.Graph(id = 'Gantt_all_disruptions', figure = Leadtimes_fig_dict['all disruption intervals']),
                 ], style={'width': '40%'}
             ),

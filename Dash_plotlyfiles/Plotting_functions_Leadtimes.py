@@ -78,7 +78,7 @@ def plot_fractions_wait_time_reasons_perschakel(finished_order_df, schakel):
     print([sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply])
 
     # after all wait times are received it plots them in a pie chart using the plotly pie chart function
-    fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'], title='Wait time reasons')
+    fig = px.pie(values=[sum_other_wait_time, sum_wait_time_breakdowns, sum_wait_time_shortage_supply], names=['other wait times', 'breaksdowns', 'shortage supply'])
 
     return fig
 
@@ -132,6 +132,7 @@ def plot_gantt_disruptions(measures):
                                             y = dict_disruption_periods['disruptions_names'])
     # one could set specific range for one day in seconds
     fig_all_disruptions_gantt.update_xaxes(range = [datetime.datetime.fromtimestamp(timestamp), datetime.datetime.fromtimestamp(timestamp + 86400)])
+    #fig_all_disruptions_gantt.update_yaxes(visible=False, showticklabels=False)
 
 
     return fig_all_disruptions_gantt
